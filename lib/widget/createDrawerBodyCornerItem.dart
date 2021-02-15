@@ -1,17 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-Widget createDrawerBodyCornerItem(
-    {String icon, String text, GestureTapCallback onTap}) {
+Widget createDrawerBodyCornerItem({String icon, String text}) {
   return Padding(
-      padding:  EdgeInsets.fromLTRB(15,0,15,0),
+      padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
       child: new GestureDetector(
-        onTap: onTap,
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
               color: Color(0xff47496B),
-              borderRadius: BorderRadius.only(topRight:  Radius.circular(15), topLeft: Radius.circular(15))),
+              borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(15), topLeft: Radius.circular(15))),
           child: Row(
             children: <Widget>[
               Image.asset(
@@ -27,7 +26,13 @@ Widget createDrawerBodyCornerItem(
                         fontWeight: FontWeight.w400,
                         color: Colors.white,
                         fontSize: 13)),
-              )
+              ),
+              Container(
+                  alignment: Alignment.centerLeft,
+                  child: Icon(
+                    Icons.arrow_drop_down,
+                    color: Colors.white,
+                  ))
             ],
           ),
         ),

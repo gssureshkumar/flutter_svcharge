@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/fragments/chargeFleetPage.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -88,10 +89,17 @@ class _DynamicListViewScreenState extends State<statusPage> {
         appBar: AppBar(
           backgroundColor: Color(0xff0F123F),
           actions: <Widget>[
-            Container(
-                padding: EdgeInsets.fromLTRB(0,0,20,0),
-                child:SvgPicture.asset('assets/small_app_icon.svg', height:30, width: 30,color: Colors.white))
-
+            new GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      new MaterialPageRoute(
+                          builder: (context) => new chargeFleetPage()));
+                },
+                child: Container(
+                    padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                    child: SvgPicture.asset('assets/small_app_icon.svg',
+                        height: 30, width: 30, color: Colors.white)))
           ],
         ),
         drawer: navigationDrawer(),
@@ -181,12 +189,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         padding: EdgeInsets.all(10.0),
                         child: Row(
                           children: [
-                            Image.asset(
-                              "assets/log_icon.png",
-                              fit: BoxFit.cover,
-                              width: 17,
-                              height: 18,
-                            ),
+                            SvgPicture.asset('assets/log_icon.svg'),
                             Padding(
                               padding: EdgeInsets.only(left: 8.0),
                               child: Text("Logs",

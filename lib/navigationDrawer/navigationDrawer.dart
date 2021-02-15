@@ -30,26 +30,22 @@ class navigationDrawer extends StatelessWidget {
                       children: <Widget>[
 
                         Container(
-                            padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                            child: SvgPicture.asset('assets/image_logo.svg',
+                            padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            child: SvgPicture.asset('assets/logo_nav_icon.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
                         createDrawerBodyCornerItem(
+                            icon: 'assets/charger_fleet.png',
+                            text: 'Charge Fleet Management'),
+                        createDrawerBodyNoItem(
                             icon: 'assets/charger.png',
                             text: 'Chargers',
                             onTap: () => Navigator.push(
                                 context,
                                 new MaterialPageRoute(
                                     builder: (context) => new chargeFleetPage()))),
-                        createDrawerBodyDownItem(
-                            icon: 'assets/charger_fleet.png',
-                            text: 'Charge Fleet Management',
-                            onTap: () => Navigator.pushReplacement(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) =>
-                                        new statusPage()))),
-                        createDrawerBodyNoItem(
+
+                        createDrawerBodyItem(
                             icon: 'assets/status.png',
                             text: 'Status',
                             onTap: () => Navigator.pushReplacement(

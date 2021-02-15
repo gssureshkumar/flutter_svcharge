@@ -53,7 +53,7 @@ flutter:
 
   assets:
     - assets/login_bottom_backgroud.svg
-    - assets/log_icon.png
+    - assets/log_icon.svg
     - assets/small_app_icon.svg
     - assets/bottom_backgroud.png
     - assets/image_logo.svg
@@ -64,7 +64,8 @@ flutter:
     - assets/status.png
     - assets/logout.png
     - assets/white_logo.png
-    - assets/bus_image.png
+    - assets/bus_image.svg
+    - assets/logo_nav_icon.svg
     - assets/work_in_progress.png
 
 

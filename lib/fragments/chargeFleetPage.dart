@@ -17,6 +17,7 @@ class chargeFleetPage extends StatefulWidget {
 class _DynamicListViewScreenState extends State<chargeFleetPage> {
   List<Charger> chargerList = new List<Charger>();
   List<Charger> statusList = new List<Charger>();
+  String lableName;
 
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
@@ -53,10 +54,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     if (picked != null && picked != selectedDate)
       setState(() {
         selectedDate = picked;
-        _modalBottomSheetMenu();
+        _modalBottomSheetMenu(lableName);
         Navigator.pop(context);
       });
   }
+
   LineChartData mainData() {
     return LineChartData(
       gridData: FlGridData(
@@ -260,7 +262,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     );
   }
 
-  void _modalBottomSheetMenu() {
+  void _modalBottomSheetMenu(String label) {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
@@ -273,14 +275,25 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Container(
-                      padding: EdgeInsets.all(15),
-                      child: Text('chargerList[index]',
-                          style: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                              fontSize: 15)),
-                    ),
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Image.asset(
+                            "assets/charger.png",
+                            fit: BoxFit.cover,
+                            color: Color(0xff14AE39),
+                            width: 20,
+                            height: 20,
+                          ),
+                          Container(
+                            padding: EdgeInsets.all(15),
+                            child: Text(label,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                    fontSize: 14)),
+                          )
+                        ]),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -323,7 +336,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         padding: EdgeInsets.all(20),
                         child: FlatButton(
                             onPressed: () {
-                              _modalBottomSheetMenu();
+                              _modalBottomSheetMenu(label);
                               Navigator.pop(context);
                             },
                             child: Text('Consumption',
@@ -400,15 +413,16 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                 child: new GestureDetector(
                                     onTap: () => _selectDate(context),
                                     child: Container(
-                                        padding:EdgeInsets.fromLTRB(30, 15, 30, 15),
-                                        child:Text(
-                                      "${selectedDate.toLocal()}".split(' ')[0],
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          color: Colors.black,
-                                          fontSize: 13),
-
-                                    )))),
+                                        padding:
+                                            EdgeInsets.fromLTRB(30, 15, 30, 15),
+                                        child: Text(
+                                          "${selectedDate.toLocal()}"
+                                              .split(' ')[0],
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.w400,
+                                              color: Colors.black,
+                                              fontSize: 13),
+                                        )))),
                           ],
                         )),
                     Container(
@@ -467,7 +481,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               fontSize: 15)),
                     ),
                     Container(
-                      height: MediaQuery.of(context).size.height * 0.75,
+                      height: MediaQuery.of(context).size.height * 0.65,
                       padding: EdgeInsets.all(15.0),
                       child: new ListView.builder(
                           itemCount: statusList.length,
@@ -481,8 +495,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       },
     );
   }
-
-
 
   // A Separate Function called from itemBuilder
   Widget buildStatusBody(BuildContext ctxt, int index) {
@@ -502,8 +514,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         Container(
                             padding: EdgeInsets.all(20.0),
                             alignment: Alignment.center,
-                            child: Image.asset('assets/bus_image.png',
-                                height: 20)),
+                            child: SvgPicture.asset('assets/bus_image.svg',
+                                height: 30, width: 60)),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
@@ -559,14 +571,25 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
-                          Container(
-                            padding: EdgeInsets.all(15),
-                            child: Text(chargerList[index].chargerName,
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.black,
-                                    fontSize: 14)),
-                          ),
+                          Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Image.asset(
+                                  "assets/charger.png",
+                                  fit: BoxFit.cover,
+                                  color: Color(0xff14AE39),
+                                  width: 20,
+                                  height: 20,
+                                ),
+                                Container(
+                                  padding: EdgeInsets.all(15),
+                                  child: Text(chargerList[index].chargerName,
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black,
+                                          fontSize: 14)),
+                                )
+                              ]),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: <Widget>[
@@ -613,8 +636,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               padding: EdgeInsets.all(10),
                               child: FlatButton(
                                   onPressed: () {
+                                    lableName = chargerList[index].chargerName;
                                     Navigator.pop(context);
-                                    _modalBottomSheetMenu();
+                                    _modalBottomSheetMenu(
+                                        chargerList[index].chargerName);
                                   },
                                   child: Text(
                                       'View More about ' +
@@ -644,7 +669,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                             Container(
                                 padding: EdgeInsets.all(20.0),
                                 alignment: Alignment.center,
-                                child: Image.asset('assets/bus_image.png')),
+                                child: SvgPicture.asset('assets/bus_image.svg',
+                                    height: 50, width: 100)),
                             Container(
                                 padding: EdgeInsets.all(10.0),
                                 alignment: Alignment.center,
