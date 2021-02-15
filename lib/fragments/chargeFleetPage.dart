@@ -17,6 +17,7 @@ class chargeFleetPage extends StatefulWidget {
 class _DynamicListViewScreenState extends State<chargeFleetPage> {
   List<Charger> chargerList = new List<Charger>();
   List<Charger> statusList = new List<Charger>();
+
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
@@ -40,7 +41,22 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
 
   String pickerValue = 'Station 1';
   String monthValue = 'December 1';
+  DateTime selectedDate = DateTime.now();
 
+  _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate, // Refer step 1
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selectedDate)
+      setState(() {
+        selectedDate = picked;
+        _modalBottomSheetMenu();
+        Navigator.pop(context);
+      });
+  }
   LineChartData mainData() {
     return LineChartData(
       gridData: FlGridData(
@@ -381,49 +397,18 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                         BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
-                                child: DropdownButton<String>(
-                                  value: monthValue,
-                                  icon: Icon(Icons.arrow_drop_down),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xff000000),
-                                      fontSize: 13),
-                                  underline: Container(
-                                    height: 0,
-                                    color: Colors.deepPurpleAccent,
-                                  ),
-                                  onChanged: (String newValue) {
-                                    setState(() {
-                                      monthValue = newValue;
-                                      print(monthValue);
-                                    });
-                                  },
-                                  items: <String>[
-                                    'December 1',
-                                    'December 2',
-                                    'December 3',
-                                    'December 4'
-                                  ].map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Row(
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 8.0),
-                                            child: Text(value,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                    fontSize: 13)),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
-                                )),
+                                child: new GestureDetector(
+                                    onTap: () => _selectDate(context),
+                                    child: Container(
+                                        padding:EdgeInsets.fromLTRB(30, 15, 30, 15),
+                                        child:Text(
+                                      "${selectedDate.toLocal()}".split(' ')[0],
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          color: Colors.black,
+                                          fontSize: 13),
+
+                                    )))),
                           ],
                         )),
                     Container(
@@ -482,7 +467,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               fontSize: 15)),
                     ),
                     Container(
-                      height: 200,
+                      height: MediaQuery.of(context).size.height * 0.75,
                       padding: EdgeInsets.all(15.0),
                       child: new ListView.builder(
                           itemCount: statusList.length,
@@ -496,6 +481,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       },
     );
   }
+
+
 
   // A Separate Function called from itemBuilder
   Widget buildStatusBody(BuildContext ctxt, int index) {
@@ -687,10 +674,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         appBar: AppBar(
           backgroundColor: Color(0xff0F123F),
           actions: <Widget>[
-            SvgPicture.asset('assets/image_logo.svg',
-                width: 80, height: 50, color: Colors.white),
+            Container(
+                padding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+                child: SvgPicture.asset('assets/small_app_icon.svg',
+                    height: 30, width: 30, color: Colors.white))
           ],
-          title: Text("Home"),
         ),
         drawer: navigationDrawer(),
         body: SafeArea(

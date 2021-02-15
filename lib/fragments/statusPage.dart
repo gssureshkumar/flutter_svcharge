@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class statusPage extends StatefulWidget {
@@ -87,7 +88,10 @@ class _DynamicListViewScreenState extends State<statusPage> {
         appBar: AppBar(
           backgroundColor: Color(0xff0F123F),
           actions: <Widget>[
-            Image.asset('assets/white_logo.png'),
+            Container(
+                padding: EdgeInsets.fromLTRB(0,0,20,0),
+                child:SvgPicture.asset('assets/small_app_icon.svg', height:30, width: 30,color: Colors.white))
+
           ],
         ),
         drawer: navigationDrawer(),
@@ -105,7 +109,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                             Container(
                                 padding: EdgeInsets.all(10.0),
                                 alignment: Alignment.center,
-                                child: new Text("Chargers",
+                                child: new Text("Status",
                                     style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           fontWeight: FontWeight.w700,

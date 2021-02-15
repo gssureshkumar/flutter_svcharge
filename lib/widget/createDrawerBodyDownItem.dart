@@ -11,7 +11,7 @@ Widget createDrawerBodyDownItem(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
           color: Color(0xff47496B),
-          borderRadius: BorderRadius.only(topRight:  Radius.circular(15), topLeft: Radius.circular(15))),
+          borderRadius: BorderRadius.all(Radius.circular(0))),
       child: Row(
         children: <Widget>[
 

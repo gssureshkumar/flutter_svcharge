@@ -5,6 +5,7 @@ import 'package:flutter_app/fragments/chagersPage.dart';
 import 'package:flutter_app/fragments/chargeFleetPage.dart';
 import 'package:flutter_app/fragments/optimizedPage.dart';
 import 'package:flutter_app/fragments/statusPage.dart';
+import 'package:flutter_app/widget/createDrawerBodyCornerItem.dart';
 import 'package:flutter_app/widget/createDrawerBodyDownItem.dart';
 import 'package:flutter_app/widget/createDrawerBodyNoItem.dart';
 import 'package:flutter_app/widget/createDrawerBodyUpItem.dart';
@@ -27,44 +28,46 @@ class navigationDrawer extends StatelessWidget {
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: <Widget>[
+
                         Container(
                             padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
                             child: SvgPicture.asset('assets/image_logo.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
-                        createDrawerBodyDownItem(
-                            icon: 'assets/charger_fleet.png',
-                            text: 'Charge Fleet Management',
-                            onTap: () => Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) =>
-                                        new chargeFleetPage()))),
-                        createDrawerBodyNoItem(
-                            icon: 'assets/status.png',
-                            text: 'Status',
-                            onTap: () => Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => new statusPage()))),
-                        createDrawerBodyItem(
+                        createDrawerBodyCornerItem(
                             icon: 'assets/charger.png',
                             text: 'Chargers',
                             onTap: () => Navigator.push(
                                 context,
                                 new MaterialPageRoute(
-                                    builder: (context) => new chargerPage()))),
+                                    builder: (context) => new chargeFleetPage()))),
+                        createDrawerBodyDownItem(
+                            icon: 'assets/charger_fleet.png',
+                            text: 'Charge Fleet Management',
+                            onTap: () => Navigator.pushReplacement(
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) =>
+                                        new statusPage()))),
+                        createDrawerBodyNoItem(
+                            icon: 'assets/status.png',
+                            text: 'Status',
+                            onTap: () => Navigator.pushReplacement(
+                                context,
+                                new MaterialPageRoute(
+                                    builder: (context) => new statusPage()))),
+
                         createDrawerBodyItem(
                             icon: 'assets/buses.png',
                             text: 'Buses',
-                            onTap: () => Navigator.push(
+                            onTap: () => Navigator.pushReplacement(
                                 context,
                                 new MaterialPageRoute(
                                     builder: (context) => new busesPage()))),
                         createDrawerBodyUpItem(
                             icon: 'assets/optimized.png',
                             text: 'Optimized',
-                            onTap: () => Navigator.push(
+                            onTap: () => Navigator.pushReplacement(
                                 context,
                                 new MaterialPageRoute(
                                     builder: (context) =>

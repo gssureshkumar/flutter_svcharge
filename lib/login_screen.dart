@@ -144,7 +144,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _passwordValidate = false;
                               _storeLoggedInStatus(true);
                               Navigator.of(context)
-                                  .push(MaterialPageRoute(builder: (context) {
+                                  .pushReplacement(MaterialPageRoute(builder: (context) {
                                 return chargeFleetPage();
                               }));
                             }

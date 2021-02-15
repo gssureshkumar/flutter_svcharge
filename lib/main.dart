@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_screen.dart';
@@ -30,17 +31,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
         home: Scaffold(
           body: Container(
             child: Stack(
               children: [
                 Center(
-                  child: Image.asset('assets/image_logo.png'),
-                ),
+                  child:  SvgPicture.asset('assets/image_logo.svg',
+                alignment: Alignment.center,
+                color: Colors.white)),
               ],
             ),
           ),

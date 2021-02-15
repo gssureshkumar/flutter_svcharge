@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class busesPage extends StatelessWidget {
@@ -13,9 +14,11 @@ class busesPage extends StatelessWidget {
         appBar: AppBar(
           backgroundColor: Color(0xff0F123F),
           actions: <Widget>[
-            Image.asset('assets/white_logo.png'),
+            Container(
+                padding: EdgeInsets.fromLTRB(0,0,20,0),
+                child:SvgPicture.asset('assets/small_app_icon.svg', height:30, width: 30,color: Colors.white))
+
           ],
-          title: Text("Buses"),
         ),
         drawer: navigationDrawer(),
         body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
