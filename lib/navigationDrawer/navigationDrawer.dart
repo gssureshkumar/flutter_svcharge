@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/fragments/busesPage.dart';
-import 'package:flutter_app/fragments/chagersPage.dart';
 import 'package:flutter_app/fragments/chargeFleetPage.dart';
 import 'package:flutter_app/fragments/optimizedPage.dart';
 import 'package:flutter_app/fragments/statusPage.dart';
@@ -30,7 +29,7 @@ class navigationDrawer extends StatelessWidget {
                       children: <Widget>[
 
                         Container(
-                            padding: EdgeInsets.fromLTRB(20, 20, 20, 20),
+                            padding: EdgeInsets.fromLTRB(20, 60, 20, 40),
                             child: SvgPicture.asset('assets/logo_nav_icon.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
@@ -44,7 +43,6 @@ class navigationDrawer extends StatelessWidget {
                                 context,
                                 new MaterialPageRoute(
                                     builder: (context) => new chargeFleetPage()))),
-
                         createDrawerBodyItem(
                             icon: 'assets/status.png',
                             text: 'Status',
@@ -52,7 +50,6 @@ class navigationDrawer extends StatelessWidget {
                                 context,
                                 new MaterialPageRoute(
                                     builder: (context) => new statusPage()))),
-
                         createDrawerBodyItem(
                             icon: 'assets/buses.png',
                             text: 'Buses',

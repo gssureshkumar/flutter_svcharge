@@ -65,6 +65,7 @@ flutter:
     - assets/logout.png
     - assets/white_logo.png
     - assets/bus_image.svg
+    - assets/station_icon.svg
     - assets/logo_nav_icon.svg
     - assets/work_in_progress.png
 

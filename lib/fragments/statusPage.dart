@@ -49,8 +49,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         Container(
                             padding: EdgeInsets.all(20.0),
                             alignment: Alignment.center,
-                            child: Image.asset('assets/bus_image.png',
-                                height: 20)),
+                            child: SvgPicture.asset('assets/bus_image.svg',
+                                height: 30, width: 60)),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
@@ -163,13 +163,11 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       value: value,
                                       child: Row(
                                         children: <Widget>[
-                                          Image.asset(
-                                            "assets/charger.png",
-                                            fit: BoxFit.cover,
-                                            color: Color(0xff14AE39),
-                                            width: 20,
-                                            height: 20,
-                                          ),
+                                      SvgPicture.asset(
+                                      'assets/station_icon.svg',
+                                          color: Color(0xff14AE39),
+                                          width: 20,
+                                          height: 20),
                                           Padding(
                                             padding: EdgeInsets.only(left: 8.0),
                                             child: Text(value,
