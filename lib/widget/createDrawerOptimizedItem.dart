@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/widget/MyConstants.dart';
 
-Widget createDrawerBodyUpItem(
+Widget createDrawerOptimizedItem(
     {String icon, String text, GestureTapCallback onTap}) {
   return Padding(
       padding:  EdgeInsets.fromLTRB(15,0,15,0),
@@ -11,7 +12,9 @@ Widget createDrawerBodyUpItem(
       alignment: Alignment(0, -5),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: Color(0xff47496B),
+          color: MyConstants.navPosition != 4
+              ? Color(0xff47496B)
+              : Colors.transparent,
           borderRadius: BorderRadius.only(
               bottomRight: Radius.circular(15),
               bottomLeft: Radius.circular(15))),

@@ -4,16 +4,21 @@ import 'package:flutter_app/fragments/busesPage.dart';
 import 'package:flutter_app/fragments/chargeFleetPage.dart';
 import 'package:flutter_app/fragments/optimizedPage.dart';
 import 'package:flutter_app/fragments/statusPage.dart';
+import 'package:flutter_app/login_screen.dart';
+import 'package:flutter_app/widget/MyConstants.dart';
 import 'package:flutter_app/widget/createDrawerBodyCornerItem.dart';
-import 'package:flutter_app/widget/createDrawerBodyDownItem.dart';
-import 'package:flutter_app/widget/createDrawerBodyNoItem.dart';
-import 'package:flutter_app/widget/createDrawerBodyUpItem.dart';
+import 'package:flutter_app/widget/createDrawerBusesItem.dart';
+import 'package:flutter_app/widget/createDrawerChargerItem.dart';
+import 'package:flutter_app/widget/createDrawerOptimizedItem.dart';
 import 'package:flutter_app/widget/createDrawerHeader.dart';
-import 'package:flutter_app/widget/createDrawerBodyItem.dart';
+import 'package:flutter_app/widget/createDrawerStatusItem.dart';
 import 'package:flutter_app/routes/pageRoute.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class navigationDrawer extends StatelessWidget {
+  bool isNavSelected;
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -27,7 +32,6 @@ class navigationDrawer extends StatelessWidget {
                     child: ListView(
                       padding: EdgeInsets.zero,
                       children: <Widget>[
-
                         Container(
                             padding: EdgeInsets.fromLTRB(20, 60, 20, 40),
                             child: SvgPicture.asset('assets/logo_nav_icon.svg',
@@ -36,35 +40,54 @@ class navigationDrawer extends StatelessWidget {
                         createDrawerBodyCornerItem(
                             icon: 'assets/charger_fleet.png',
                             text: 'Charge Fleet Management'),
-                        createDrawerBodyNoItem(
+                        createDrawerChargerItem(
                             icon: 'assets/charger.png',
                             text: 'Chargers',
-                            onTap: () => Navigator.push(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => new chargeFleetPage()))),
-                        createDrawerBodyItem(
+                            onTap: () => {
+                                  print(MyConstants.navPosition),
+                                  MyConstants.navPosition = 1,
+                                  Navigator.push(
+                                      context,
+                                      new MaterialPageRoute(
+                                          builder: (context) =>
+                                              new chargeFleetPage()))
+                                }),
+                        createDrawerStatusItem(
                             icon: 'assets/status.png',
                             text: 'Status',
-                            onTap: () => Navigator.pushReplacement(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => new statusPage()))),
-                        createDrawerBodyItem(
+                            onTap: () => {
+                                  print(MyConstants.navPosition),
+                                  MyConstants.navPosition = 2,
+                                  Navigator.pushReplacement(
+                                      context,
+                                      new MaterialPageRoute(
+                                          builder: (context) =>
+                                              new statusPage()))
+                                }),
+                        createDrawerBusesItem(
                             icon: 'assets/buses.png',
                             text: 'Buses',
-                            onTap: () => Navigator.pushReplacement(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) => new busesPage()))),
-                        createDrawerBodyUpItem(
+                            onTap: () => {
+                                  print(MyConstants.navPosition),
+                                  MyConstants.navPosition = 3,
+                                  Navigator.pushReplacement(
+                                      context,
+                                      new MaterialPageRoute(
+                                          builder: (context) =>
+                                              new busesPage()))
+                                }),
+                        createDrawerOptimizedItem(
                             icon: 'assets/optimized.png',
                             text: 'Optimized',
-                            onTap: () => Navigator.pushReplacement(
-                                context,
-                                new MaterialPageRoute(
-                                    builder: (context) =>
-                                        new optimizedPage()))),
+                            onTap: () => {
+                                  print(MyConstants.navPosition),
+                                  MyConstants.navPosition = 4,
+                                  Navigator.pushReplacement(
+                                      context,
+                                      new MaterialPageRoute(
+                                          builder: (context) =>
+                                              new optimizedPage()))
+                                }),
                       ],
                     ),
                   ))),
@@ -76,26 +99,42 @@ class navigationDrawer extends StatelessWidget {
                 alignment: FractionalOffset.bottomCenter,
                 // This container holds all the children that will be aligned
                 // on the bottom and should not scroll with the above ListView
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: <Widget>[
-                    Image.asset(
-                      'assets/logout.png',
-                      fit: BoxFit.cover,
-                      width: 20,
-                      height: 20,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 8.0),
-                      child: Text("Logout",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                              fontSize: 13)),
+                child: new GestureDetector(
+                  onTap: () => {
+                    _clearInStatus(),
+                    Navigator.pushReplacement(
+                      context,
+                      new MaterialPageRoute(
+                          builder: (context) => new LoginScreen()),
                     )
-                  ],
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: <Widget>[
+                      Image.asset(
+                        'assets/logout.png',
+                        fit: BoxFit.cover,
+                        width: 20,
+                        height: 20,
+                      ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8.0),
+                        child: Text("Logout",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w400,
+                                color: Colors.white,
+                                fontSize: 13)),
+                      )
+                    ],
+                  ),
                 ),
               )),
         ]));
+  }
+
+  // Sets the login status
+  void _clearInStatus() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    await preferences.clear();
   }
 }

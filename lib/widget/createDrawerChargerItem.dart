@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/widget/MyConstants.dart';
 
-Widget createDrawerBodyNoItem(
+Widget createDrawerChargerItem(
     {String icon, String text, GestureTapCallback onTap}) {
   return Padding(
       padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
@@ -9,6 +10,11 @@ Widget createDrawerBodyNoItem(
         onTap: onTap,
         child: Container(
           padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+              color: MyConstants.navPosition != 1
+                  ? Color(0xff47496B)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.all(Radius.circular(0))),
           child: Row(
             children: <Widget>[
               Image.asset(

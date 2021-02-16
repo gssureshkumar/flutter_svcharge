@@ -1,16 +1,19 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/widget/MyConstants.dart';
 
-Widget createDrawerBodyItem(
+Widget createDrawerBusesItem(
     {String icon, String text, GestureTapCallback onTap}) {
   return Padding(
-      padding:  EdgeInsets.fromLTRB(15,0,15,0),
+      padding: EdgeInsets.fromLTRB(15, 0, 15, 0),
       child: new GestureDetector(
         onTap: onTap,
         child: Container(
           padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
-              color: Color(0xff47496B),
+              color: MyConstants.navPosition != 3
+                  ? Color(0xff47496B)
+                  : Colors.transparent,
               borderRadius: BorderRadius.all(Radius.circular(0))),
           child: Row(
             children: <Widget>[
