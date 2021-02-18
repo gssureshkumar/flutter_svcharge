@@ -1,7 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/models/ChargerDataList.dart';
+import 'package:flutter_app/models/StationDataList.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
+import 'package:flutter_app/repository/ChargerRepository.dart';
+import 'package:flutter_app/widget/ProgressDialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -15,7 +19,8 @@ class chargeFleetPage extends StatefulWidget {
 }
 
 class _DynamicListViewScreenState extends State<chargeFleetPage> {
-  List<Charger> chargerList = new List<Charger>();
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+  List<ChargerData> chargerDataList = new List<ChargerData>();
   List<Charger> statusList = new List<Charger>();
   String lableName;
 
@@ -24,22 +29,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     const Color(0xff02d39a),
   ];
   bool showAvg = false;
-
-  List<Charger> addData() {
-    int i = 1;
-
-    while (i <= 100) {
-      var charger = new Charger();
-      charger.chargerId = "EMP $i";
-      charger.chargerName = "Charger $i";
-      charger.chargerIcon = "";
-      charger.chargerUnit = "50 KW";
-      chargerList.add(charger);
-      i++;
-    }
-    return chargerList;
-  }
-
   String pickerValue = 'Station 1';
   String monthValue = 'December 1';
   DateTime selectedDate = DateTime.now();
@@ -82,8 +71,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
               color: Color(0xff68737d),
               fontWeight: FontWeight.bold,
               fontSize: 16),
@@ -102,8 +90,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
             color: Color(0xff67727d),
             fontWeight: FontWeight.bold,
             fontSize: 15,
@@ -151,7 +138,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           belowBarData: BarAreaData(
             show: true,
             colors:
-            gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+                gradientColors.map((color) => color.withOpacity(0.3)).toList(),
           ),
         ),
       ],
@@ -182,8 +169,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
               color: Color(0xff68737d),
               fontWeight: FontWeight.bold,
               fontSize: 16),
@@ -202,8 +188,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
             color: Color(0xff67727d),
             fontWeight: FontWeight.bold,
             fontSize: 15,
@@ -272,10 +257,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.8,
+            height: MediaQuery.of(context).size.height * 0.8,
             color: Colors.white,
             child: ListView(
               children: <Widget>[
@@ -364,7 +346,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       color: Colors.black12,
                                     ),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
+                                        BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: DropdownButton<String>(
@@ -392,38 +374,36 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     'Station 3',
                                     'Station 4'
                                   ].map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: 8.0),
-                                                child: Text(value,
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight
-                                                            .w400,
-                                                        color: Colors.black,
-                                                        fontSize: 13)),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Text(value,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontSize: 13)),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 )),
                             Container(
                                 decoration: BoxDecoration(
                                     color: Color(0xffF4F7FC),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
+                                        BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: new GestureDetector(
                                     onTap: () => _selectDate(context),
                                     child: Container(
                                         padding:
-                                        EdgeInsets.fromLTRB(30, 15, 30, 15),
+                                            EdgeInsets.fromLTRB(30, 15, 30, 15),
                                         child: Text(
                                           "${selectedDate.toLocal()}"
                                               .split(' ')[0],
@@ -490,10 +470,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               fontSize: 15)),
                     ),
                     Container(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.65,
+                      height: MediaQuery.of(context).size.height * 0.65,
                       padding: EdgeInsets.all(15.0),
                       child: new ListView.builder(
                           itemCount: statusList.length,
@@ -595,7 +572,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                 ),
                                 Container(
                                   padding: EdgeInsets.all(15),
-                                  child: Text(chargerList[index].chargerName,
+                                  child: Text(chargerDataList[index].name,
                                       style: TextStyle(
                                           fontWeight: FontWeight.w600,
                                           color: Colors.black,
@@ -612,7 +589,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                   child: RaisedButton(
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                        BorderRadius.circular(10.0),
+                                            BorderRadius.circular(10.0),
                                         side: BorderSide(
                                             color: Color(0xff14AF38))),
                                     color: Color(0xff14AF38),
@@ -630,7 +607,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                   child: RaisedButton(
                                     shape: RoundedRectangleBorder(
                                         borderRadius:
-                                        BorderRadius.circular(10.0),
+                                            BorderRadius.circular(10.0),
                                         side: BorderSide(
                                             color: Color(0xffFF4646))),
                                     color: Color(0xffFF4646),
@@ -648,18 +625,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               padding: EdgeInsets.all(10),
                               child: FlatButton(
                                   onPressed: () {
-                                    lableName = chargerList[index].chargerName;
+                                    lableName = chargerDataList[index].name;
                                     Navigator.pop(context);
                                     _modalBottomSheetMenu(
-                                        chargerList[index].chargerName);
+                                        chargerDataList[index].name);
                                   },
                                   child: Text(
-                                      'View More about ' +
-                                          chargerList[index].chargerName,
+                                      'View More' ,
                                       style: GoogleFonts.poppins(
                                         textStyle: TextStyle(
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                             fontWeight: FontWeight.w500,
                                             color: Color(0xff0F123F),
                                             fontSize: 13),
@@ -686,7 +662,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                             Container(
                                 padding: EdgeInsets.all(10.0),
                                 alignment: Alignment.center,
-                                child: new Text(chargerList[index].chargerName,
+                                child: new Text(chargerDataList[index].name,
                                     style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           fontWeight: FontWeight.w400,
@@ -700,11 +676,50 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   @override
   void initState() {
     super.initState();
-    addData();
+    // ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+    fetchStationList();
     addStatusData();
   }
 
-  String dropdownValue = 'Station 1';
+  String dropdownValue;
+
+  List<Groups> _stationGroup = [];
+
+  fetchStationList() async {
+    try {
+      StationDataList response =
+          await new ChargerRepository().fetchStationList();
+      setState(() {
+        print(response.data.groups.length);
+        if (response.success && response.data.groups.length > 0) {
+          _stationGroup = response.data.groups;
+          dropdownValue = response.data.groups[0].name;
+          ProgressDialogs.showLoadingDialog(
+              context, _keyLoader);
+          fetchChargerList(response.data.groups[0].sId);
+        }
+        print(dropdownValue);
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  fetchChargerList(String chargerId) async {
+    try {
+      ChargerDataList response =
+      await new ChargerRepository().fetchChargerList(chargerId);
+      setState(() {
+        Navigator.of(_keyLoader.currentContext,rootNavigator: true).pop();
+        print(response.data.length);
+        if (response.success) {
+          chargerDataList = response.data;
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -746,7 +761,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       color: Colors.black12,
                                     ),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
+                                        BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: DropdownButton<String>(
@@ -765,48 +780,47 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                   onChanged: (String newValue) {
                                     setState(() {
                                       dropdownValue = newValue;
-                                      print(dropdownValue);
                                     });
+                                    ProgressDialogs.showLoadingDialog(context, _keyLoader);
+                                    for (var i = 0; i < _stationGroup.length; i++) {
+                                      if(_stationGroup[i].name.endsWith(newValue)){
+                                        fetchChargerList(_stationGroup[i].sId);
+                                      }
+                                    }
                                   },
-                                  items: <String>[
-                                    'Station 1',
-                                    'Station 2',
-                                    'Station 3',
-                                    'Station 4'
-                                  ].map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Row(
-                                            children: <Widget>[
-                                              SvgPicture.asset(
-                                                  'assets/station_icon.svg',
-                                                  color: Color(0xff14AE39),
-                                                  width: 20,
-                                                  height: 20),
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: 8.0),
-                                                child: Text(value,
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight
-                                                            .w400,
-                                                        color: Colors.black,
-                                                        fontSize: 13)),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
+                                  items: _stationGroup
+                                      .map<DropdownMenuItem<String>>(
+                                          (Groups value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value.name,
+                                      child: Row(
+                                        children: <Widget>[
+                                          SvgPicture.asset(
+                                              'assets/station_icon.svg',
+                                              color: Color(0xff14AE39),
+                                              width: 20,
+                                              height: 20),
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Text(value.name,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontSize: 13)),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 )),
                           ],
                         )),
                     Expanded(
                       child: new GridView.builder(
                           gridDelegate:
-                          SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2),
-                          itemCount: chargerList.length,
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2),
+                          itemCount: chargerDataList.length,
                           itemBuilder: (BuildContext ctxt, int index) =>
                               buildBody(ctxt, index)),
                     )

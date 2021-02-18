@@ -1,27 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/blocs/ChargerBloc.dart';
+import 'package:flutter_app/fragments/Error.dart';
+import 'package:flutter_app/fragments/Loading.dart';
+import 'package:flutter_app/models/LoginInputData.dart';
+import 'package:flutter_app/models/LoginSuccessResponse.dart';
+import 'package:flutter_app/models/LoginSuccessResponse.dart';
+import 'package:flutter_app/models/UserInput.dart';
+import 'package:flutter_app/networking/api_response.dart';
+import 'package:flutter_app/repository/LoginRepository.dart';
+import 'package:flutter_app/widget/ProgressDialog.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'fragments/chargeFleetPage.dart';
+import 'models/LoginSuccessResponse.dart';
+
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   TextEditingController nameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool _emailValidate = false;
   bool _passwordValidate = false;
 
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // appBar: AppBar(
-        //   automaticallyImplyLeading: false,
-        // ),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: false,
+      // ),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: <Widget>[
@@ -29,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     alignment: Alignment.bottomLeft,
-                    image:  AssetImage('assets/bottom_backgroud.png'),
+                    image: AssetImage('assets/bottom_backgroud.png'),
                     fit: BoxFit.none,
                   ),
                 ),
@@ -127,8 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                   color: Colors.white,
                                   fontSize: 13)),
                           onPressed: () {
-                            print(nameController.text);
-                            print(passwordController.text);
                             if (!isEmail(nameController.text)) {
                               setState(() {
                                 _emailValidate = true;
@@ -142,11 +159,13 @@ class _LoginScreenState extends State<LoginScreen> {
                             } else {
                               _emailValidate = false;
                               _passwordValidate = false;
-                              _storeLoggedInStatus(true);
-                              Navigator.of(context)
-                                  .pushReplacement(MaterialPageRoute(builder: (context) {
-                                return chargeFleetPage();
-                              }));
+                              ProgressDialogs.showLoadingDialog(
+                                  context, _keyLoader); //invoking login
+                              UserInput input = new UserInput(
+                                  nameController.text, passwordController.text);
+                              LoginInputData inputData = new LoginInputData(
+                                  input);
+                              callDoLogin(inputData);
                             }
                           },
                         )),
@@ -163,9 +182,64 @@ class _LoginScreenState extends State<LoginScreen> {
     return regExp.hasMatch(em);
   }
 
+  callDoLogin(LoginInputData inputData) async {
+    try {
+      LoginSuccessResponse response = await new LoginRepository().callDoLogin(inputData);
+      Navigator.of(_keyLoader.currentContext,rootNavigator: true).pop();
+      loginSuccess(response);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   // Sets the login status
   void _storeLoggedInStatus(bool isLoggedIn) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setBool('isLoggedIn', isLoggedIn);
   }
+
+  // Sets the login status
+  void _storeLoggedInId(String userId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString('user_id', userId);
+  }
+
+  void _storeLoggedInToken(String token) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString('token', 'Bearer ' +token);
+  }
+
+  void _storeLoggedInChargerId(String chargerId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString('charger_id', chargerId);
+  }
+
+
+  void loginSuccess(LoginSuccessResponse loginSuccessResponse) {
+    if (loginSuccessResponse.success &&
+        loginSuccessResponse.data.user.customerId.license.evCharging.enabled) {
+      _storeLoggedInStatus(true);
+      _storeLoggedInId(loginSuccessResponse.data.user.sId);
+      _storeLoggedInToken(loginSuccessResponse.data.token);
+      _storeLoggedInChargerId(loginSuccessResponse.data.user.customerId.license.evCharging.id);
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (context) {
+        return chargeFleetPage();
+      }));
+    }else{
+      Fluttertoast.showToast(
+          msg: loginSuccessResponse.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0
+      );
+    }
+  }
+
+
 }
+
+
