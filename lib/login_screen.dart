@@ -1,3 +1,4 @@
+import 'package:sc_charge/widget/ProgressDialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +8,6 @@ import 'package:sc_charge/models/LoginSuccessResponse.dart';
 import 'package:sc_charge/models/UserInput.dart';
 import 'package:sc_charge/networking/api_response.dart';
 import 'package:sc_charge/repository/LoginRepository.dart';
-import 'package:sc_charge/widget/ProgressDialog.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -115,24 +115,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     Container(
-                        alignment: Alignment.centerRight,
-                        child: FlatButton(
-                            onPressed: () {
-                              //forgot password screen
-                            },
-                            textColor: Color(0xff0F123F),
-                            child: Text(
-                              'Forgot Password?',
-                              style: GoogleFonts.poppins(
-                                textStyle: TextStyle(
-                                    fontWeight: FontWeight.w400,
-                                    color: Color(0xff0F123F),
-                                    fontSize: 13),
-                              ),
-                            ))),
-                    Container(
                         height: 50,
-                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                         child: RaisedButton(
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10.0),

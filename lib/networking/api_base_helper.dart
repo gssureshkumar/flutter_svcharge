@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:sc_charge/models/ErrorMessage.dart';
 import 'package:sc_charge/networking/api_exceptions.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -9,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiBaseHelper {
   final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
 
+
+
   Future<dynamic> get(String url) async {
     print('Api Get, url $url');
     var responseJson;
@@ -18,7 +21,7 @@ class ApiBaseHelper {
       responseJson = _returnResponse(response);
     } on SocketException {
       print('No net');
-      throw FetchDataException('No Internet connection');
+      responseJson = json.encode( new ErrorMessage(false, 'No Internet connection'));
     }
     print('api get recieved!');
     return responseJson;
@@ -33,7 +36,7 @@ class ApiBaseHelper {
           responseJson = _returnResponse(response);
           } on SocketException {
           print('No net');
-          throw FetchDataException('No Internet connection');
+          responseJson = json.encode( new ErrorMessage(false, 'No Internet connection'));
           }
           print('api post.');
       return responseJson;
@@ -48,7 +51,7 @@ class ApiBaseHelper {
       responseJson = _returnResponse(response);
     } on SocketException {
       print('No net');
-      throw FetchDataException('No Internet connection');
+      responseJson = json.encode( new ErrorMessage(false, 'No Internet connection'));
     }
     print('api post.');
     return responseJson;
@@ -62,7 +65,7 @@ class ApiBaseHelper {
         responseJson = _returnResponse(response);
       } on SocketException {
         print('No net');
-        throw FetchDataException('No Internet connection');
+        responseJson = json.encode( new ErrorMessage(false, 'No Internet connection'));
       }
       print('api put.');
       print(responseJson.toString());
@@ -77,7 +80,7 @@ class ApiBaseHelper {
         apiResponse = _returnResponse(response);
       } on SocketException {
         print('No net');
-        throw FetchDataException('No Internet connection');
+        apiResponse = json.encode( new ErrorMessage(false, 'No Internet connection'));
       }
       print('api delete.');
       return apiResponse;
