@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/fragments/chargeFleetPage.dart';
-import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
+import 'package:sc_charge/fragments/chargeFleetPage.dart';
+import 'package:sc_charge/navigationDrawer/navigationDrawer.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 

@@ -1,4 +1,4 @@
-# flutter_app
+# sc_charge
 
 A new Flutter application.
 

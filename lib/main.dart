@@ -3,7 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_screen.dart';
-import 'package:flutter_app/fragments/chargeFleetPage.dart';
+import 'package:sc_charge/fragments/chargeFleetPage.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   var initialRoute = 'login';

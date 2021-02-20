@@ -1,4 +1,4 @@
-name: flutter_app
+name: sc_charge
 description: A new Flutter application.
 
 # The following line prevents the package from being accidentally published to
@@ -56,7 +56,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/login_bottom_backgroud.svg
     - assets/log_icon.svg
     - assets/small_app_icon.svg
     - assets/bottom_backgroud.png

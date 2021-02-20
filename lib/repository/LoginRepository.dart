@@ -1,6 +1,6 @@
-import 'package:flutter_app/models/LoginInputData.dart';
-import 'package:flutter_app/models/LoginSuccessResponse.dart';
-import 'package:flutter_app/networking/api_base_helper.dart';
+import 'package:sc_charge/models/LoginInputData.dart';
+import 'package:sc_charge/models/LoginSuccessResponse.dart';
+import 'package:sc_charge/networking/api_base_helper.dart';
 
 class LoginRepository {
   ApiBaseHelper _helper = ApiBaseHelper();

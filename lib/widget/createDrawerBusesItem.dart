@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/widget/MyConstants.dart';
+import 'package:sc_charge/widget/MyConstants.dart';
 
 Widget createDrawerBusesItem(
     {String icon, String text, GestureTapCallback onTap}) {

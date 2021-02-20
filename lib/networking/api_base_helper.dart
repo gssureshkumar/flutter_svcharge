@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter_app/networking/api_exceptions.dart';
+import 'package:sc_charge/networking/api_exceptions.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';

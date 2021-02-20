@@ -1,4 +1,4 @@
-import 'package:flutter_app/models/UserInput.dart';
+import 'package:sc_charge/models/UserInput.dart';
 
 class LoginInputData {
   UserInput user;

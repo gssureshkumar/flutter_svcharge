@@ -1,10 +1,10 @@
-import 'package:flutter_app/models/ChargerDataList.dart';
-import 'package:flutter_app/models/GraphResponseData.dart';
-import 'package:flutter_app/models/SingleChargerData.dart';
-import 'package:flutter_app/models/StationDataList.dart';
-import 'package:flutter_app/models/StatusLogsData.dart';
-import 'package:flutter_app/models/SuccessResponseData.dart';
-import 'package:flutter_app/networking/api_base_helper.dart';
+import 'package:sc_charge/models/ChargerDataList.dart';
+import 'package:sc_charge/models/GraphResponseData.dart';
+import 'package:sc_charge/models/SingleChargerData.dart';
+import 'package:sc_charge/models/StationDataList.dart';
+import 'package:sc_charge/models/StatusLogsData.dart';
+import 'package:sc_charge/models/SuccessResponseData.dart';
+import 'package:sc_charge/networking/api_base_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ChargerRepository {
