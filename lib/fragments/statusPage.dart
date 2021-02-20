@@ -686,11 +686,11 @@ class _DynamicListViewScreenState extends State<statusPage> {
       Fluttertoast.showToast(
           msg: response.message,
           toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
+          gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black12,
           textColor: Colors.white,
-          fontSize: 16.0);
+          fontSize: 14.0);
     } catch (e) {
       print(e);
     }
@@ -705,11 +705,11 @@ class _DynamicListViewScreenState extends State<statusPage> {
       Fluttertoast.showToast(
           msg: response.message,
           toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
+          gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black12,
           textColor: Colors.white,
-          fontSize: 16.0);
+          fontSize: 14.0);
     } catch (e) {
       print(e);
     }
