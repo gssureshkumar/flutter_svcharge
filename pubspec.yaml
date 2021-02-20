@@ -32,6 +32,9 @@ dependencies:
   flutter_svg: ^0.18.0
   fluttertoast: ^7.1.6
   flutter_launcher_icons: ^0.8.1
+  flutter_conditional_rendering: ^1.1.1
+  date_format: ^1.0.9
+  intl: ^0.16.1
 flutter_icons:
   image_path: "assets/launcher_icon.png"
   android: true
@@ -64,11 +67,17 @@ flutter:
     - assets/optimized.png
     - assets/status.png
     - assets/logout.png
-    - assets/white_logo.png
     - assets/bus_image.svg
     - assets/station_icon.svg
     - assets/logo_nav_icon.svg
     - assets/work_in_progress.png
+    - assets/warning_icon.svg
+    - assets/tick_icon.svg
+    - assets/connected_icon.svg
+    - assets/disconnected.svg
+    - assets/not_connected_icon.svg
+    - assets/start_charging.svg
+    - assets/stop_charging.svg
 
 
 

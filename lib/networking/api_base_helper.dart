@@ -39,6 +39,21 @@ class ApiBaseHelper {
       return responseJson;
     }
 
+  Future<dynamic> postWithOutBody(String url) async {
+    var responseJson;
+    try {
+      print('postWithOutBody , url $url');
+      String token = await _getToken();
+      final response = await http.post(_baseUrl + url, headers: {HttpHeaders.authorizationHeader: token});
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      print('No net');
+      throw FetchDataException('No Internet connection');
+    }
+    print('api post.');
+    return responseJson;
+  }
+
     Future<dynamic> put(String url, dynamic body) async {
       print('Api Put, url $url');
       var responseJson;

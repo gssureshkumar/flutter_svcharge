@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/blocs/ChargerBloc.dart';
-import 'package:flutter_app/fragments/Error.dart';
-import 'package:flutter_app/fragments/Loading.dart';
 import 'package:flutter_app/models/LoginInputData.dart';
 import 'package:flutter_app/models/LoginSuccessResponse.dart';
 import 'package:flutter_app/models/LoginSuccessResponse.dart';
@@ -38,9 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: false,
-      // ),
+        // appBar: AppBar(
+        //   automaticallyImplyLeading: false,
+        // ),
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: <Widget>[
@@ -52,13 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     fit: BoxFit.none,
                   ),
                 ),
-                padding: EdgeInsets.all(10),
+                padding: EdgeInsets.fromLTRB(10, 70, 10, 10),
                 child: ListView(
                   children: <Widget>[
-                    SvgPicture.asset('assets/image_logo.svg'),
+                    SvgPicture.asset('assets/logo_nav_icon.svg'),
                     Container(
                         alignment: Alignment.center,
-                        padding: EdgeInsets.all(10),
+                        padding: EdgeInsets.fromLTRB(10, 50, 10, 10),
                         child: Text('Login Please',
                             style: GoogleFonts.poppins(
                               textStyle: TextStyle(
@@ -71,6 +68,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: EdgeInsets.all(10),
                         child: Text(
                             'This is a secure system and you will need to provide your login details to access the site.',
+                            textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
                               textStyle: TextStyle(
                                   fontWeight: FontWeight.w400,
@@ -163,8 +161,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context, _keyLoader); //invoking login
                               UserInput input = new UserInput(
                                   nameController.text, passwordController.text);
-                              LoginInputData inputData = new LoginInputData(
-                                  input);
+                              LoginInputData inputData =
+                                  new LoginInputData(input);
                               callDoLogin(inputData);
                             }
                           },
@@ -184,8 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   callDoLogin(LoginInputData inputData) async {
     try {
-      LoginSuccessResponse response = await new LoginRepository().callDoLogin(inputData);
-      Navigator.of(_keyLoader.currentContext,rootNavigator: true).pop();
+      LoginSuccessResponse response =
+          await new LoginRepository().callDoLogin(inputData);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
       loginSuccess(response);
     } catch (e) {
       print(e);
@@ -206,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _storeLoggedInToken(String token) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
-    pref.setString('token', 'Bearer ' +token);
+    pref.setString('token', 'Bearer ' + token);
   }
 
   void _storeLoggedInChargerId(String chargerId) async {
@@ -214,19 +213,19 @@ class _LoginScreenState extends State<LoginScreen> {
     pref.setString('charger_id', chargerId);
   }
 
-
   void loginSuccess(LoginSuccessResponse loginSuccessResponse) {
     if (loginSuccessResponse.success &&
         loginSuccessResponse.data.user.customerId.license.evCharging.enabled) {
       _storeLoggedInStatus(true);
       _storeLoggedInId(loginSuccessResponse.data.user.sId);
       _storeLoggedInToken(loginSuccessResponse.data.token);
-      _storeLoggedInChargerId(loginSuccessResponse.data.user.customerId.license.evCharging.id);
+      _storeLoggedInChargerId(
+          loginSuccessResponse.data.user.customerId.license.evCharging.id);
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) {
         return chargeFleetPage();
       }));
-    }else{
+    } else {
       Fluttertoast.showToast(
           msg: loginSuccessResponse.message,
           toastLength: Toast.LENGTH_SHORT,
@@ -234,12 +233,7 @@ class _LoginScreenState extends State<LoginScreen> {
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.red,
           textColor: Colors.white,
-          fontSize: 16.0
-      );
+          fontSize: 16.0);
     }
   }
-
-
 }
-
-

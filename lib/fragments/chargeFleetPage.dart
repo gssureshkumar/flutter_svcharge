@@ -1,15 +1,21 @@
+import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/models/ChargerDataList.dart';
+import 'package:flutter_app/models/GraphResponseData.dart';
 import 'package:flutter_app/models/StationDataList.dart';
+import 'package:flutter_app/models/SuccessResponseData.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
 import 'package:flutter_app/repository/ChargerRepository.dart';
 import 'package:flutter_app/widget/ProgressDialog.dart';
+import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class chargeFleetPage extends StatefulWidget {
   static const String routeName = '/chargeFleetPage';
@@ -21,16 +27,16 @@ class chargeFleetPage extends StatefulWidget {
 class _DynamicListViewScreenState extends State<chargeFleetPage> {
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   List<ChargerData> chargerDataList = new List<ChargerData>();
-  List<Charger> statusList = new List<Charger>();
-  String lableName;
+  List<LogsData> statusList = new List<LogsData>();
+
+  ChargerData chargerData;
+  GraphResponseData graphResponseData;
 
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
   ];
-  bool showAvg = false;
-  String pickerValue = 'Station 1';
-  String monthValue = 'December 1';
+  String pickerValue = 'Power';
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
@@ -43,106 +49,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     if (picked != null && picked != selectedDate)
       setState(() {
         selectedDate = picked;
-        _modalBottomSheetMenu(lableName);
         Navigator.pop(context);
+        fetchDeviceLogs(chargerData);
       });
-  }
-
-  LineChartData mainData() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 22,
-          getTextStyles: (value) => const TextStyle(
-              color: Color(0xff68737d),
-              fontWeight: FontWeight.bold,
-              fontSize: 16),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 2:
-                return 'MAR';
-              case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
-            }
-            return '';
-          },
-          margin: 8,
-        ),
-        leftTitles: SideTitles(
-          showTitles: true,
-          getTextStyles: (value) => const TextStyle(
-            color: Color(0xff67727d),
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 1:
-                return '10k';
-              case 3:
-                return '30k';
-              case 5:
-                return '50k';
-            }
-            return '';
-          },
-          reservedSize: 28,
-          margin: 12,
-        ),
-      ),
-      borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: const Color(0xff37434d), width: 1)),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: [
-            FlSpot(0, 3),
-            FlSpot(2.6, 2),
-            FlSpot(4.9, 5),
-            FlSpot(6.8, 3.1),
-            FlSpot(8, 4),
-            FlSpot(9.5, 3),
-            FlSpot(11, 4),
-          ],
-          isCurved: true,
-          colors: gradientColors,
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            colors:
-                gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-          ),
-        ),
-      ],
-    );
   }
 
   LineChartData avgData() {
@@ -175,12 +84,14 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
               fontSize: 16),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 2:
-                return 'MAR';
               case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
+                return "5:00";
+              case 10:
+                return "10:00";
+              case 15:
+                return "15:00";
+              case 20:
+                return "20:00";
             }
             return '';
           },
@@ -195,12 +106,12 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           ),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 1:
-                return '10k';
-              case 3:
-                return '30k';
-              case 5:
-                return '50k';
+              case 1000:
+                return '1000';
+              case 5000:
+                return '5000';
+              case 8000:
+                return '10000';
             }
             return '';
           },
@@ -212,20 +123,12 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           show: true,
           border: Border.all(color: const Color(0xff37434d), width: 1)),
       minX: 0,
-      maxX: 11,
+      maxX: 24,
       minY: 0,
-      maxY: 6,
+      maxY: 10000,
       lineBarsData: [
         LineChartBarData(
-          spots: [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
+          spots: getLineChartData(),
           isCurved: true,
           colors: [
             ColorTween(begin: gradientColors[0], end: gradientColors[1])
@@ -251,14 +154,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     );
   }
 
-  void _modalBottomSheetMenu(String label) {
+  void _modalBottomSheetMenu(ChargerData chargerData) {
+    print(pickerValue);
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
       builder: (BuildContext context) {
         return Container(
             height: MediaQuery.of(context).size.height * 0.8,
-            color: Colors.white,
             child: ListView(
               children: <Widget>[
                 Column(
@@ -276,7 +182,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                           ),
                           Container(
                             padding: EdgeInsets.all(15),
-                            child: Text(label,
+                            child: Text(chargerData.name,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black,
@@ -300,7 +206,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       fontSize: 13)),
-                              onPressed: () {},
+                              onPressed: () {
+                                startCharger(chargerData.serialNumber);
+                              },
                             )),
                         Container(
                             height: 40,
@@ -316,18 +224,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       fontSize: 13)),
-                              onPressed: () {},
+                              onPressed: () {
+                                stopCharger(chargerData.serialNumber);
+                              },
                             )),
                       ],
                     ),
                     Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.all(20),
-                        child: FlatButton(
-                            onPressed: () {
-                              _modalBottomSheetMenu(label);
-                              Navigator.pop(context);
-                            },
+                        child: Container(
+                            alignment: Alignment.center,
                             child: Text('Consumption',
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
@@ -363,16 +270,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     color: Colors.deepPurpleAccent,
                                   ),
                                   onChanged: (String newValue) {
+                                    print(newValue);
                                     setState(() {
                                       pickerValue = newValue;
-                                      print(pickerValue);
                                     });
+                                    Navigator.pop(context);
+                                    _modalBottomSheetMenu(chargerData);
                                   },
                                   items: <String>[
-                                    'Station 1',
-                                    'Station 2',
-                                    'Station 3',
-                                    'Station 4'
+                                    'Power',
+                                    'Consumption',
+                                    'Soc',
                                   ].map<DropdownMenuItem<String>>(
                                       (String value) {
                                     return DropdownMenuItem<String>(
@@ -433,27 +341,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     top: 24,
                                     bottom: 12),
                                 child: LineChart(
-                                  showAvg ? avgData() : mainData(),
+                                  avgData(),
                                 ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 60,
-                            height: 34,
-                            child: FlatButton(
-                              onPressed: () {
-                                setState(() {
-                                  showAvg = !showAvg;
-                                });
-                              },
-                              child: Text(
-                                'avg',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: showAvg
-                                        ? Colors.white.withOpacity(0.5)
-                                        : Colors.white),
                               ),
                             ),
                           ),
@@ -469,14 +358,21 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               color: Colors.black,
                               fontSize: 15)),
                     ),
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.65,
-                      padding: EdgeInsets.all(15.0),
-                      child: new ListView.builder(
-                          itemCount: statusList.length,
-                          itemBuilder: (BuildContext ctxt, int index) =>
-                              buildStatusBody(ctxt, index)),
-                    )
+                    Conditional.single(
+                      context: context,
+                      conditionBuilder: (BuildContext context) =>
+                          statusList.length > 0,
+                      widgetBuilder: (BuildContext context) => Container(
+                        height: MediaQuery.of(context).size.height * 0.65,
+                        padding: EdgeInsets.all(15.0),
+                        child: new ListView.builder(
+                            itemCount: statusList.length,
+                            itemBuilder: (BuildContext ctxt, int index) =>
+                                buildStatusBody(ctxt, index)),
+                      ),
+                      fallbackBuilder: (BuildContext context) =>
+                          Text('No Logs found!!!'),
+                    ),
                   ],
                 ),
               ],
@@ -501,14 +397,49 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                       alignment: FractionalOffset.center,
                       child: Row(children: <Widget>[
                         Container(
-                            padding: EdgeInsets.all(20.0),
-                            alignment: Alignment.center,
-                            child: SvgPicture.asset('assets/bus_image.svg',
-                                height: 30, width: 60)),
+                          padding: EdgeInsets.all(10.0),
+                          alignment: Alignment.center,
+                          child: ConditionalSwitch.single<String>(
+                            context: context,
+                            valueBuilder: (BuildContext context) =>
+                                statusList[index].action.toLowerCase(),
+                            caseBuilders: {
+                              'connected': (BuildContext context) => Container(
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset(
+                                      'assets/connected_icon.svg',
+                                      height: 30,
+                                      width: 30)),
+                              'disconnected': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/disconnected.svg',
+                                          height: 30,
+                                          width: 30)),
+                              'started charging': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/start_charging.svg',
+                                          height: 30,
+                                          width: 30)),
+                            },
+                            fallbackBuilder: (BuildContext context) =>
+                                Container(
+                                    alignment: Alignment.center,
+                                    child: SvgPicture.asset(
+                                        'assets/stop_charging.svg',
+                                        height: 30,
+                                        width: 30)),
+                          ),
+                        ),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(statusList[index].chargerUnit,
+                            child: new Text(
+                                convertDateFromString(
+                                    statusList[index].timeStamp),
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                       fontWeight: FontWeight.w700,
@@ -518,7 +449,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(statusList[index].chargerName,
+                            child: new Text(' - ' + statusList[index].action,
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                       fontWeight: FontWeight.w400,
@@ -529,32 +460,28 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             ])));
   }
 
-  List<Charger> addStatusData() {
-    int i = 1;
-
-    while (i <= 100) {
-      var charger = new Charger();
-      charger.chargerId = "CHA $i";
-      charger.chargerName = "- Bus Connected $i";
-      charger.chargerIcon = "";
-      charger.chargerUnit = "12:00";
-      statusList.add(charger);
-      i++;
-    }
-    return statusList;
+  String convertDateFromString(String strDate) {
+    DateTime todayDate =
+        new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    return formatDate(todayDate, [HH, ':', nn]);
   }
 
 // A Separate Function called from itemBuilder
   Widget buildBody(BuildContext ctxt, int index) {
     return new Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
         child: new InkResponse(
             onTap: () {
               showModalBottomSheet<void>(
                 context: context,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+                ),
                 builder: (BuildContext context) {
                   return Container(
                     height: 200,
-                    color: Colors.white,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -598,7 +525,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,
                                             fontSize: 13)),
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      startCharger(
+                                          chargerDataList[index].serialNumber);
+                                    },
                                   )),
                               Container(
                                   height: 40,
@@ -616,7 +546,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                             fontWeight: FontWeight.w600,
                                             color: Colors.white,
                                             fontSize: 13)),
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      stopCharger(
+                                          chargerDataList[index].serialNumber);
+                                    },
                                   )),
                             ],
                           ),
@@ -625,13 +558,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               padding: EdgeInsets.all(10),
                               child: FlatButton(
                                   onPressed: () {
-                                    lableName = chargerDataList[index].name;
+                                    chargerData = chargerDataList[index];
                                     Navigator.pop(context);
-                                    _modalBottomSheetMenu(
-                                        chargerDataList[index].name);
+                                    fetchDeviceLogs(chargerDataList[index]);
                                   },
-                                  child: Text(
-                                      'View More' ,
+                                  child: Text('View More',
                                       style: GoogleFonts.poppins(
                                         textStyle: TextStyle(
                                             decoration:
@@ -655,10 +586,43 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: <Widget>[
                             Container(
-                                padding: EdgeInsets.all(20.0),
-                                alignment: Alignment.center,
-                                child: SvgPicture.asset('assets/bus_image.svg',
-                                    height: 50, width: 100)),
+                              padding: EdgeInsets.all(10.0),
+                              alignment: Alignment.center,
+                              child: ConditionalSwitch.single<String>(
+                                context: context,
+                                valueBuilder: (BuildContext context) =>
+                                    chargerDataList[index].status.toLowerCase(),
+                                caseBuilders: {
+                                  'offline': (BuildContext context) =>
+                                      Container(
+                                          alignment: Alignment.center,
+                                          child: SvgPicture.asset(
+                                              'assets/warning_icon.svg',
+                                              height: 100,
+                                              width: 100)),
+                                  'not connected': (BuildContext context) =>
+                                      Container(
+                                          alignment: Alignment.center,
+                                          child: SvgPicture.asset(
+                                              'assets/not_connected_icon.svg',
+                                              height: 100,
+                                              width: 100)),
+                                  'online': (BuildContext context) => Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/tick_icon.svg',
+                                          height: 100,
+                                          width: 100)),
+                                },
+                                fallbackBuilder: (BuildContext context) =>
+                                    Container(
+                                        alignment: Alignment.center,
+                                        child: SvgPicture.asset(
+                                            'assets/bus_image.svg',
+                                            height: 50,
+                                            width: 100)),
+                              ),
+                            ),
                             Container(
                                 padding: EdgeInsets.all(10.0),
                                 alignment: Alignment.center,
@@ -676,9 +640,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   @override
   void initState() {
     super.initState();
-    // ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+    Future.delayed(Duration(milliseconds: 100)).then((__) {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+    });
     fetchStationList();
-    addStatusData();
   }
 
   String dropdownValue;
@@ -694,8 +659,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         if (response.success && response.data.groups.length > 0) {
           _stationGroup = response.data.groups;
           dropdownValue = response.data.groups[0].name;
-          ProgressDialogs.showLoadingDialog(
-              context, _keyLoader);
           fetchChargerList(response.data.groups[0].sId);
         }
         print(dropdownValue);
@@ -708,9 +671,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   fetchChargerList(String chargerId) async {
     try {
       ChargerDataList response =
-      await new ChargerRepository().fetchChargerList(chargerId);
+          await new ChargerRepository().fetchChargerList(chargerId);
       setState(() {
-        Navigator.of(_keyLoader.currentContext,rootNavigator: true).pop();
+        Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
         print(response.data.length);
         if (response.success) {
           chargerDataList = response.data;
@@ -721,8 +684,131 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     }
   }
 
+  startCharger(String chargerId) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+      SuccessResponseData response =
+          await new ChargerRepository().startCharger(chargerId);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      Fluttertoast.showToast(
+          msg: response.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  fetchDeviceLogs(ChargerData chargerData) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader);
+      final DateFormat formatter = DateFormat('yyyy-MM-dd');
+      final String formatted = formatter.format(selectedDate);
+      graphResponseData = await new ChargerRepository()
+          .fetchGraphLogList(chargerData.serialNumber, formatted);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      if (graphResponseData.success) {
+        _modalBottomSheetMenu(chargerData);
+        setState(() {
+          statusList = graphResponseData.data.logsData;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  List<FlSpot> getLineChartData() {
+    print(pickerValue);
+    List<FlSpot> flSpotList = new List<FlSpot>();
+    if (pickerValue.toLowerCase().endsWith("power")) {
+      if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
+        for (var i = 0;
+            i < graphResponseData.data.consumptionData.power[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+              .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(
+                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else if (pickerValue.toLowerCase().endsWith("soc")) {
+      if (graphResponseData.data.consumptionData.soc[0].data.length > 0) {
+        for (var i = 0;
+            i < graphResponseData.data.consumptionData.soc[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+              .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(
+                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else if (pickerValue.toLowerCase().endsWith("consumption")) {
+      if (graphResponseData.data.consumptionData.consumption[0].data.length >
+          0) {
+        for (var i = 0;
+            i <
+                graphResponseData
+                    .data.consumptionData.consumption[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(
+              graphResponseData.data.consumptionData.consumption[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(graphResponseData
+                  .data.consumptionData.consumption[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else {
+      flSpotList.add(FlSpot(0.0, 0.0));
+    }
+    return flSpotList;
+  }
+
+  String getXTitle() {
+    final String formatter = formatDate(selectedDate, [MM]);
+    return formatter;
+  }
+
+  stopCharger(String chargerId) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+      SuccessResponseData response =
+          await new ChargerRepository().stopCharger(chargerId);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      Fluttertoast.showToast(
+          msg: response.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // ProgressDialogs.showLoadingDialog(context, _keyLoader);
     return new Scaffold(
         appBar: AppBar(
           backgroundColor: Color(0xff0F123F),
@@ -781,9 +867,14 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     setState(() {
                                       dropdownValue = newValue;
                                     });
-                                    ProgressDialogs.showLoadingDialog(context, _keyLoader);
-                                    for (var i = 0; i < _stationGroup.length; i++) {
-                                      if(_stationGroup[i].name.endsWith(newValue)){
+                                    ProgressDialogs.showLoadingDialog(
+                                        context, _keyLoader);
+                                    for (var i = 0;
+                                        i < _stationGroup.length;
+                                        i++) {
+                                      if (_stationGroup[i]
+                                          .name
+                                          .endsWith(newValue)) {
                                         fetchChargerList(_stationGroup[i].sId);
                                       }
                                     }
@@ -823,15 +914,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                           itemCount: chargerDataList.length,
                           itemBuilder: (BuildContext ctxt, int index) =>
                               buildBody(ctxt, index)),
-                    )
+                    ),
                   ])),
         ));
   }
-}
-
-class Charger {
-  String chargerId;
-  String chargerName;
-  String chargerIcon;
-  String chargerUnit;
 }

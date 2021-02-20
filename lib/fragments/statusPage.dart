@@ -3,9 +3,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/fragments/chargeFleetPage.dart';
+import 'package:flutter_app/models/ChargerDataList.dart';
+import 'package:flutter_app/models/GraphResponseData.dart';
+import 'package:flutter_app/models/SingleChargerData.dart';
+import 'package:flutter_app/models/StationDataList.dart';
+import 'package:flutter_app/models/StatusLogsData.dart';
+import 'package:flutter_app/models/SuccessResponseData.dart';
 import 'package:flutter_app/navigationDrawer/navigationDrawer.dart';
+import 'package:flutter_app/repository/ChargerRepository.dart';
+import 'package:flutter_app/widget/ProgressDialog.dart';
+import 'package:flutter_conditional_rendering/conditional_switch.dart';
+import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:date_format/date_format.dart';
+import 'package:intl/intl.dart';
 
 class statusPage extends StatefulWidget {
   static const String routeName = '/chargeFleetPage';
@@ -15,46 +28,19 @@ class statusPage extends StatefulWidget {
 }
 
 class _DynamicListViewScreenState extends State<statusPage> {
-  List<Charger> chargerList = new List<Charger>();
-  List<Charger> statusList = new List<Charger>();
-  String lableName;
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+  List<SLogsData> statusLogsList = new List<SLogsData>();
+  List<LogsData> statusGroupLogsList = new List<LogsData>();
+  List<ChargerData> statusList = new List<ChargerData>();
+
+  SingleChargerData chargerData;
+  GraphResponseData graphResponseData;
 
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
     const Color(0xff02d39a),
   ];
-  bool showAvg = false;
-  List<Charger> addData() {
-    int i = 1;
-
-    while (i <= 100) {
-      var charger = new Charger();
-      charger.chargerId = "CHA $i";
-      charger.chargerName = "- Bus Connected $i";
-      charger.chargerType = "- Charger $i";
-      charger.chargerUnit = "12:00";
-      chargerList.add(charger);
-      i++;
-    }
-    return chargerList;
-  }
-
-  List<Charger> addStatusData() {
-    int i = 1;
-
-    while (i <= 100) {
-      var charger = new Charger();
-      charger.chargerId = "CHA $i";
-      charger.chargerName = "- Bus Connected $i";
-      charger.chargerIcon = "";
-      charger.chargerUnit = "12:00";
-      statusList.add(charger);
-      i++;
-    }
-    return statusList;
-  }
-  String pickerValue = 'Station 1';
-  String monthValue = 'December 1';
+  String pickerValue = 'Power';
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
@@ -67,108 +53,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
     if (picked != null && picked != selectedDate)
       setState(() {
         selectedDate = picked;
-        _modalBottomSheetMenu(lableName);
         Navigator.pop(context);
+        fetchDeviceLogs(chargerData);
       });
-  }
-
-  LineChartData mainData() {
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: SideTitles(
-          showTitles: true,
-          reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(
-              color: Color(0xff68737d),
-              fontWeight: FontWeight.bold,
-              fontSize: 16),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 2:
-                return 'MAR';
-              case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
-            }
-            return '';
-          },
-          margin: 8,
-        ),
-        leftTitles: SideTitles(
-          showTitles: true,
-          getTextStyles: (value) =>
-          const TextStyle(
-            color: Color(0xff67727d),
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
-          getTitles: (value) {
-            switch (value.toInt()) {
-              case 1:
-                return '10k';
-              case 3:
-                return '30k';
-              case 5:
-                return '50k';
-            }
-            return '';
-          },
-          reservedSize: 28,
-          margin: 12,
-        ),
-      ),
-      borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: const Color(0xff37434d), width: 1)),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: [
-            FlSpot(0, 3),
-            FlSpot(2.6, 2),
-            FlSpot(4.9, 5),
-            FlSpot(6.8, 3.1),
-            FlSpot(8, 4),
-            FlSpot(9.5, 3),
-            FlSpot(11, 4),
-          ],
-          isCurved: true,
-          colors: gradientColors,
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            colors:
-            gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-          ),
-        ),
-      ],
-    );
   }
 
   LineChartData avgData() {
@@ -195,19 +82,20 @@ class _DynamicListViewScreenState extends State<statusPage> {
         bottomTitles: SideTitles(
           showTitles: true,
           reservedSize: 22,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
               color: Color(0xff68737d),
               fontWeight: FontWeight.bold,
               fontSize: 16),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 2:
-                return 'MAR';
               case 5:
-                return 'JUN';
-              case 8:
-                return 'SEP';
+                return "5:00";
+              case 10:
+                return "10:00";
+              case 15:
+                return "15:00";
+              case 20:
+                return "20:00";
             }
             return '';
           },
@@ -215,20 +103,19 @@ class _DynamicListViewScreenState extends State<statusPage> {
         ),
         leftTitles: SideTitles(
           showTitles: true,
-          getTextStyles: (value) =>
-          const TextStyle(
+          getTextStyles: (value) => const TextStyle(
             color: Color(0xff67727d),
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 1:
-                return '10k';
-              case 3:
-                return '30k';
-              case 5:
-                return '50k';
+              case 1000:
+                return '1000';
+              case 5000:
+                return '5000';
+              case 8000:
+                return '10000';
             }
             return '';
           },
@@ -240,20 +127,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
           show: true,
           border: Border.all(color: const Color(0xff37434d), width: 1)),
       minX: 0,
-      maxX: 11,
+      maxX: 24,
       minY: 0,
-      maxY: 6,
+      maxY: 10000,
       lineBarsData: [
         LineChartBarData(
-          spots: [
-            FlSpot(0, 3.44),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
+          spots: getLineChartData(),
           isCurved: true,
           colors: [
             ColorTween(begin: gradientColors[0], end: gradientColors[1])
@@ -279,17 +158,112 @@ class _DynamicListViewScreenState extends State<statusPage> {
     );
   }
 
-  void _modalBottomSheetMenu(String label) {
+
+  void showBottomSheetMenu(SingleChargerData chargerData) {
+    showModalBottomSheet<void>(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          height: 200,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/charger.png",
+                        fit: BoxFit.cover,
+                        color: Color(0xff14AE39),
+                        width: 20,
+                        height: 20,
+                      ),
+                      Container(
+                        padding: EdgeInsets.all(15),
+                        child: Text(chargerData.data.name,
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                                fontSize: 14)),
+                      )
+                    ]),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                        height: 40,
+                        width: 150,
+                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: BorderSide(color: Color(0xff14AF38))),
+                          color: Color(0xff14AF38),
+                          child: Text('Start',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  fontSize: 13)),
+                          onPressed: () {},
+                        )),
+                    Container(
+                        height: 40,
+                        width: 150,
+                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        child: RaisedButton(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                              side: BorderSide(color: Color(0xffFF4646))),
+                          color: Color(0xffFF4646),
+                          child: Text('Stop',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  fontSize: 13)),
+                          onPressed: () {},
+                        )),
+                  ],
+                ),
+                Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.all(10),
+                    child: FlatButton(
+                        onPressed: () {
+                          this.chargerData = chargerData;
+                          Navigator.pop(context);
+                          fetchDeviceLogs(chargerData);
+                        },
+                        child: Text('View More ',
+                            style: GoogleFonts.poppins(
+                              textStyle: TextStyle(
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.w500,
+                                  color: Color(0xff0F123F),
+                                  fontSize: 13),
+                            ))))
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _modalBottomSheetMenu(SingleChargerData chargerData) {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
       builder: (BuildContext context) {
         return Container(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.8,
-            color: Colors.white,
+            height: MediaQuery.of(context).size.height * 0.8,
             child: ListView(
               children: <Widget>[
                 Column(
@@ -307,7 +281,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                           ),
                           Container(
                             padding: EdgeInsets.all(15),
-                            child: Text(label,
+                            child: Text(chargerData.data.name,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black,
@@ -331,7 +305,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       fontSize: 13)),
-                              onPressed: () {},
+                              onPressed: () {
+                                startCharger(chargerData.data.serialNumber);
+                              },
                             )),
                         Container(
                             height: 40,
@@ -347,18 +323,17 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       fontWeight: FontWeight.w600,
                                       color: Colors.white,
                                       fontSize: 13)),
-                              onPressed: () {},
+                              onPressed: () {
+                                stopCharger(chargerData.data.serialNumber);
+                              },
                             )),
                       ],
                     ),
                     Container(
                         alignment: Alignment.center,
                         padding: EdgeInsets.all(20),
-                        child: FlatButton(
-                            onPressed: () {
-                              _modalBottomSheetMenu(label);
-                              Navigator.pop(context);
-                            },
+                        child: Container(
+                            alignment: Alignment.center,
                             child: Text('Consumption',
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
@@ -377,7 +352,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       color: Colors.black12,
                                     ),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
+                                        BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: DropdownButton<String>(
@@ -396,47 +371,45 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                   onChanged: (String newValue) {
                                     setState(() {
                                       pickerValue = newValue;
-                                      print(pickerValue);
                                     });
+                                    Navigator.pop(context);
+                                    _modalBottomSheetMenu(chargerData);
                                   },
                                   items: <String>[
-                                    'Station 1',
-                                    'Station 2',
-                                    'Station 3',
-                                    'Station 4'
+                                    'Power',
+                                    'Consumption',
+                                    'Soc',
                                   ].map<DropdownMenuItem<String>>(
-                                          (String value) {
-                                        return DropdownMenuItem<String>(
-                                          value: value,
-                                          child: Row(
-                                            children: <Widget>[
-                                              Padding(
-                                                padding: EdgeInsets.only(
-                                                    left: 8.0),
-                                                child: Text(value,
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight
-                                                            .w400,
-                                                        color: Colors.black,
-                                                        fontSize: 13)),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      }).toList(),
+                                      (String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Row(
+                                        children: <Widget>[
+                                          Padding(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Text(value,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontSize: 13)),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  }).toList(),
                                 )),
                             Container(
                                 decoration: BoxDecoration(
                                     color: Color(0xffF4F7FC),
                                     borderRadius:
-                                    BorderRadius.all(Radius.circular(15))),
+                                        BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: new GestureDetector(
                                     onTap: () => _selectDate(context),
                                     child: Container(
                                         padding:
-                                        EdgeInsets.fromLTRB(30, 15, 30, 15),
+                                            EdgeInsets.fromLTRB(30, 15, 30, 15),
                                         child: Text(
                                           "${selectedDate.toLocal()}"
                                               .split(' ')[0],
@@ -447,51 +420,39 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                         )))),
                           ],
                         )),
-                    Container(
-                      padding: EdgeInsets.all(10.0),
-                      child: Stack(
-                        children: <Widget>[
-                          AspectRatio(
-                            aspectRatio: 1.70,
-                            child: Container(
-                              decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(18),
+                    Conditional.single(
+                      context: context,
+                      conditionBuilder: (BuildContext context) =>
+                          getLineChartData().length > 0,
+                      widgetBuilder: (BuildContext context) => Container(
+                        padding: EdgeInsets.all(10.0),
+                        child: Stack(
+                          children: <Widget>[
+                            AspectRatio(
+                              aspectRatio: 1.70,
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(18),
+                                    ),
+                                    color: Color(0xff232d37)),
+                                child: Padding(
+                                  padding: const EdgeInsets.only(
+                                      right: 18.0,
+                                      left: 12.0,
+                                      top: 24,
+                                      bottom: 12),
+                                  child: LineChart(
+                                    avgData(),
                                   ),
-                                  color: Color(0xff232d37)),
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                    right: 18.0,
-                                    left: 12.0,
-                                    top: 24,
-                                    bottom: 12),
-                                child: LineChart(
-                                  showAvg ? avgData() : mainData(),
                                 ),
                               ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 60,
-                            height: 34,
-                            child: FlatButton(
-                              onPressed: () {
-                                setState(() {
-                                  showAvg = !showAvg;
-                                });
-                              },
-                              child: Text(
-                                'avg',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: showAvg
-                                        ? Colors.white.withOpacity(0.5)
-                                        : Colors.white),
-                              ),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      fallbackBuilder: (BuildContext context) =>
+                          Text('No Graph found!!!'),
                     ),
                     Container(
                       padding: EdgeInsets.fromLTRB(0, 15, 0, 0),
@@ -502,17 +463,21 @@ class _DynamicListViewScreenState extends State<statusPage> {
                               color: Colors.black,
                               fontSize: 15)),
                     ),
-                    Container(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.65,
-                      padding: EdgeInsets.all(15.0),
-                      child: new ListView.builder(
-                          itemCount: statusList.length,
-                          itemBuilder: (BuildContext ctxt, int index) =>
-                              buildStatusBody(ctxt, index)),
-                    )
+                    Conditional.single(
+                      context: context,
+                      conditionBuilder: (BuildContext context) =>
+                          statusList.length > 0,
+                      widgetBuilder: (BuildContext context) => Container(
+                        height: MediaQuery.of(context).size.height * 0.65,
+                        padding: EdgeInsets.all(15.0),
+                        child: new ListView.builder(
+                            itemCount: statusList.length,
+                            itemBuilder: (BuildContext ctxt, int index) =>
+                                buildStatusBody(ctxt, index)),
+                      ),
+                      fallbackBuilder: (BuildContext context) =>
+                          Text('No Logs found!!!'),
+                    ),
                   ],
                 ),
               ],
@@ -520,7 +485,6 @@ class _DynamicListViewScreenState extends State<statusPage> {
       },
     );
   }
-
 
   // A Separate Function called from itemBuilder
   Widget buildStatusBody(BuildContext ctxt, int index) {
@@ -538,14 +502,49 @@ class _DynamicListViewScreenState extends State<statusPage> {
                       alignment: FractionalOffset.center,
                       child: Row(children: <Widget>[
                         Container(
-                            padding: EdgeInsets.all(20.0),
-                            alignment: Alignment.center,
-                            child: SvgPicture.asset('assets/bus_image.svg',
-                                height: 30, width: 60)),
+                          padding: EdgeInsets.all(10.0),
+                          alignment: Alignment.center,
+                          child: ConditionalSwitch.single<String>(
+                            context: context,
+                            valueBuilder: (BuildContext context) =>
+                                statusGroupLogsList[index].action.toLowerCase(),
+                            caseBuilders: {
+                              'connected': (BuildContext context) => Container(
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset(
+                                      'assets/connected_icon.svg',
+                                      height: 30,
+                                      width: 30)),
+                              'disconnected': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/disconnected.svg',
+                                          height: 30,
+                                          width: 30)),
+                              'started charging': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/start_charging.svg',
+                                          height: 30,
+                                          width: 30)),
+                            },
+                            fallbackBuilder: (BuildContext context) =>
+                                Container(
+                                    alignment: Alignment.center,
+                                    child: SvgPicture.asset(
+                                        'assets/stop_charging.svg',
+                                        height: 30,
+                                        width: 30)),
+                          ),
+                        ),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(statusList[index].chargerUnit,
+                            child: new Text(
+                                convertDateFromString(
+                                    statusGroupLogsList[index].timeStamp),
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                       fontWeight: FontWeight.w700,
@@ -555,7 +554,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(statusList[index].chargerName,
+                            child: new Text(
+                                ' - ' + statusGroupLogsList[index].action,
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                       fontWeight: FontWeight.w400,
@@ -582,14 +582,49 @@ class _DynamicListViewScreenState extends State<statusPage> {
                       alignment: FractionalOffset.center,
                       child: Row(children: <Widget>[
                         Container(
-                            padding: EdgeInsets.all(20.0),
-                            alignment: Alignment.center,
-                            child: SvgPicture.asset('assets/bus_image.svg',
-                                height: 20, width: 40)),
+                          padding: EdgeInsets.all(10.0),
+                          alignment: Alignment.center,
+                          child: ConditionalSwitch.single<String>(
+                            context: context,
+                            valueBuilder: (BuildContext context) =>
+                                statusLogsList[index].action.toLowerCase(),
+                            caseBuilders: {
+                              'connected': (BuildContext context) => Container(
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset(
+                                      'assets/connected_icon.svg',
+                                      height: 30,
+                                      width: 30)),
+                              'disconnected': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/disconnected.svg',
+                                          height: 30,
+                                          width: 30)),
+                              'started charging': (BuildContext context) =>
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/start_charging.svg',
+                                          height: 30,
+                                          width: 30)),
+                            },
+                            fallbackBuilder: (BuildContext context) =>
+                                Container(
+                                    alignment: Alignment.center,
+                                    child: SvgPicture.asset(
+                                        'assets/stop_charging.svg',
+                                        height: 30,
+                                        width: 30)),
+                          ),
+                        ),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(chargerList[index].chargerUnit,
+                            child: new Text(
+                                convertDateFromString(
+                                    statusLogsList[index].timeStamp),
                                 style: GoogleFonts.poppins(
                                   textStyle: TextStyle(
                                       fontWeight: FontWeight.w700,
@@ -599,118 +634,24 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(chargerList[index].chargerName,
-                                style: GoogleFonts.poppins(
-                                  textStyle: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xff818E94),
-                                      fontSize: 12),
-                                ))),
+                            child:
+                                new Text(' - ' + statusLogsList[index].action,
+                                    style: GoogleFonts.poppins(
+                                      textStyle: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xff818E94),
+                                          fontSize: 12),
+                                    ))),
                         new GestureDetector(
                           onTap: () {
-                            showModalBottomSheet<void>(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return Container(
-                                  height: 200,
-                                  color: Colors.white,
-                                  child: Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: <Widget>[
-                                              Image.asset(
-                                                "assets/charger.png",
-                                                fit: BoxFit.cover,
-                                                color: Color(0xff14AE39),
-                                                width: 20,
-                                                height: 20,
-                                              ),
-                                              Container(
-                                                padding: EdgeInsets.all(15),
-                                                child: Text(chargerList[index].chargerType,
-                                                    style: TextStyle(
-                                                        fontWeight: FontWeight.w600,
-                                                        color: Colors.black,
-                                                        fontSize: 14)),
-                                              )
-                                            ]),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            Container(
-                                                height: 40,
-                                                width: 150,
-                                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                                child: RaisedButton(
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(10.0),
-                                                      side: BorderSide(
-                                                          color: Color(0xff14AF38))),
-                                                  color: Color(0xff14AF38),
-                                                  child: Text('Start',
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight.w600,
-                                                          color: Colors.white,
-                                                          fontSize: 13)),
-                                                  onPressed: () {},
-                                                )),
-                                            Container(
-                                                height: 40,
-                                                width: 150,
-                                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                                child: RaisedButton(
-                                                  shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                      BorderRadius.circular(10.0),
-                                                      side: BorderSide(
-                                                          color: Color(0xffFF4646))),
-                                                  color: Color(0xffFF4646),
-                                                  child: Text('Stop',
-                                                      style: TextStyle(
-                                                          fontWeight: FontWeight.w600,
-                                                          color: Colors.white,
-                                                          fontSize: 13)),
-                                                  onPressed: () {},
-                                                )),
-                                          ],
-                                        ),
-                                        Container(
-                                            alignment: Alignment.center,
-                                            padding: EdgeInsets.all(10),
-                                            child: FlatButton(
-                                                onPressed: () {
-                                                  lableName = chargerList[index].chargerType;
-                                                  Navigator.pop(context);
-                                                  _modalBottomSheetMenu(
-                                                      chargerList[index].chargerType);
-                                                },
-                                                child: Text(
-                                                    'View More about ' +
-                                                        chargerList[index].chargerType,
-                                                    style: GoogleFonts.poppins(
-                                                      textStyle: TextStyle(
-                                                          decoration:
-                                                          TextDecoration.underline,
-                                                          fontWeight: FontWeight.w500,
-                                                          color: Color(0xff0F123F),
-                                                          fontSize: 13),
-                                                    ))))
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
+                            fetchSingleChargerData(
+                                statusLogsList[index].chargerId);
                           },
                           child: Container(
                               padding: EdgeInsets.all(10.0),
                               alignment: Alignment.center,
-                              child: new Text(chargerList[index].chargerType,
+                              child: new Text(
+                                  ' - ' + statusLogsList[index].chargerId,
                                   style: GoogleFonts.poppins(
                                     textStyle: TextStyle(
                                         fontWeight: FontWeight.w400,
@@ -725,11 +666,189 @@ class _DynamicListViewScreenState extends State<statusPage> {
   @override
   void initState() {
     super.initState();
-    addData();
-    addStatusData();
+    Future.delayed(Duration(milliseconds: 100)).then((__) {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+    });
+    //
+    fetchStationList();
   }
 
-  String dropdownValue = 'Station 1';
+  String dropdownValue;
+
+  List<Groups> _stationGroup = [];
+
+  stopCharger(String chargerId) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+      SuccessResponseData response =
+          await new ChargerRepository().stopCharger(chargerId);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      Fluttertoast.showToast(
+          msg: response.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  startCharger(String chargerId) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
+      SuccessResponseData response =
+          await new ChargerRepository().startCharger(chargerId);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      Fluttertoast.showToast(
+          msg: response.message,
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  fetchDeviceLogs(SingleChargerData chargerData) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader);
+      final DateFormat formatter = DateFormat('yyyy-MM-dd');
+      final String formatted = formatter.format(selectedDate);
+      graphResponseData = await new ChargerRepository()
+          .fetchGraphLogList(chargerData.data.serialNumber, formatted);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      if (graphResponseData.success) {
+        _modalBottomSheetMenu(chargerData);
+        setState(() {
+          statusGroupLogsList = graphResponseData.data.logsData;
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  List<FlSpot> getLineChartData() {
+    List<FlSpot> flSpotList = new List<FlSpot>();
+    if (pickerValue.toLowerCase().endsWith("power")) {
+      if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
+        for (var i = 0;
+            i < graphResponseData.data.consumptionData.power[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+              .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(
+                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else if (pickerValue.toLowerCase().endsWith("soc")) {
+      if (graphResponseData.data.consumptionData.soc[0].data.length > 0) {
+        for (var i = 0;
+            i < graphResponseData.data.consumptionData.soc[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+              .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(
+                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else if (pickerValue.toLowerCase().endsWith("consumption")) {
+      if (graphResponseData.data.consumptionData.consumption[0].data.length >
+          0) {
+        for (var i = 0;
+            i <
+                graphResponseData
+                    .data.consumptionData.consumption[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(
+              graphResponseData.data.consumptionData.consumption[0].data[i].x);
+          final String formatted = formatDate(todayDate, [HH]);
+          flSpotList.add(FlSpot(
+              double.parse(formatted),
+              double.parse(graphResponseData
+                  .data.consumptionData.consumption[0].data[i].y)));
+        }
+      } else {
+        flSpotList.add(FlSpot(0.0, 0.0));
+      }
+    } else {
+      flSpotList.add(FlSpot(0.0, 0.0));
+    }
+    return flSpotList;
+  }
+
+  String getXTitle() {
+    final String formatter = formatDate(selectedDate, [MM]);
+    return formatter;
+  }
+
+  fetchStationList() async {
+    try {
+      StationDataList response =
+          await new ChargerRepository().fetchStationList();
+      setState(() {
+        print(response.data.groups.length);
+        if (response.success && response.data.groups.length > 0) {
+          _stationGroup = response.data.groups;
+          dropdownValue = response.data.groups[0].name;
+          fetchStatusLogList(response.data.groups[0].sId);
+        }
+        print(dropdownValue);
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  fetchSingleChargerData(String serialNum) async {
+    try {
+      SingleChargerData response =
+          await new ChargerRepository().fetchSingleChargerData(serialNum);
+      setState(() {
+        showBottomSheetMenu(response);
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  String convertDateFromString(String strDate) {
+    DateTime todayDate =
+        new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    return formatDate(todayDate, [HH, ':', nn]);
+  }
+
+  fetchStatusLogList(String chargerId) async {
+    try {
+      StatusLogsData response =
+          await new ChargerRepository().fetchStatusLogsList(chargerId);
+      setState(() {
+        Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+        print(response.data.length);
+        if (response.success) {
+          statusLogsList = response.data;
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -800,15 +919,11 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       print(dropdownValue);
                                     });
                                   },
-                                  items: <String>[
-                                    'Station 1',
-                                    'Station 2',
-                                    'Station 3',
-                                    'Station 4'
-                                  ].map<DropdownMenuItem<String>>(
-                                      (String value) {
+                                  items: _stationGroup
+                                      .map<DropdownMenuItem<String>>(
+                                          (Groups value) {
                                     return DropdownMenuItem<String>(
-                                      value: value,
+                                      value: value.name,
                                       child: Row(
                                         children: <Widget>[
                                           SvgPicture.asset(
@@ -818,7 +933,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                               height: 20),
                                           Padding(
                                             padding: EdgeInsets.only(left: 8.0),
-                                            child: Text(value,
+                                            child: Text(value.name,
                                                 style: TextStyle(
                                                     fontWeight: FontWeight.w400,
                                                     color: Colors.black,
@@ -848,21 +963,11 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         )),
                     Expanded(
                       child: new ListView.builder(
-                          itemCount: chargerList.length,
+                          itemCount: statusLogsList.length,
                           itemBuilder: (BuildContext ctxt, int index) =>
                               buildBody(ctxt, index)),
-                    )
+                    ),
                   ])),
         ));
   }
-}
-
-
-
-class Charger {
-  String chargerId;
-  String chargerName;
-  String chargerIcon;
-  String chargerUnit;
-  String chargerType;
 }

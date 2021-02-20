@@ -5,7 +5,10 @@ import 'package:flutter_app/fragments/chargeFleetPage.dart';
 import 'package:flutter_app/fragments/optimizedPage.dart';
 import 'package:flutter_app/fragments/statusPage.dart';
 import 'package:flutter_app/login_screen.dart';
+import 'package:flutter_app/models/SuccessResponseData.dart';
+import 'package:flutter_app/repository/ChargerRepository.dart';
 import 'package:flutter_app/widget/MyConstants.dart';
+import 'package:flutter_app/widget/ProgressDialog.dart';
 import 'package:flutter_app/widget/createDrawerBodyCornerItem.dart';
 import 'package:flutter_app/widget/createDrawerBusesItem.dart';
 import 'package:flutter_app/widget/createDrawerChargerItem.dart';
@@ -18,6 +21,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class navigationDrawer extends StatelessWidget {
   bool isNavSelected;
+  final GlobalKey<State> _keyLoader = new GlobalKey<State>();
 
   @override
   Widget build(BuildContext context) {
@@ -101,12 +105,8 @@ class navigationDrawer extends StatelessWidget {
                 // on the bottom and should not scroll with the above ListView
                 child: new GestureDetector(
                   onTap: () => {
-                    _clearInStatus(),
-                    Navigator.pushReplacement(
-                      context,
-                      new MaterialPageRoute(
-                          builder: (context) => new LoginScreen()),
-                    )
+                    ProgressDialogs.showLoadingDialog(context, _keyLoader),
+                    userLogout(context),
                   },
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.start,
@@ -136,5 +136,22 @@ class navigationDrawer extends StatelessWidget {
   void _clearInStatus() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.clear();
+  }
+
+  userLogout(BuildContext context) async {
+    try {
+      //invoking login
+      SuccessResponseData response = await new ChargerRepository().userLogout();
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      if (response.success) {
+        _clearInStatus();
+        Navigator.pushReplacement(
+          context,
+          new MaterialPageRoute(builder: (context) => new LoginScreen()),
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 }
