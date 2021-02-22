@@ -79,39 +79,47 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           showTitles: true,
           reservedSize: 22,
           getTextStyles: (value) => const TextStyle(
-              color: Color(0xff68737d),
-              fontWeight: FontWeight.bold,
-              fontSize: 16),
+              fontWeight: FontWeight.w400,
+              color: Color(0xff67727d),
+              fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 5:
-                return "5:00";
-              case 10:
-                return "10:00";
+              case 3:
+                return "3:00";
+              case 6:
+                return "06:00";
+              case 9:
+                return "09:00";
+              case 12:
+                return "12:00";
               case 15:
                 return "15:00";
-              case 20:
-                return "20:00";
+              case 18:
+                return "18:00";
+              case 21:
+                return "21:00";
+
             }
-            return '';
+            return "";
           },
           margin: 8,
         ),
         leftTitles: SideTitles(
           showTitles: true,
           getTextStyles: (value) => const TextStyle(
-            color: Color(0xff67727d),
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
+              fontWeight: FontWeight.w400,
+              color: Color(0xff67727d),
+              fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 1000:
                 return '1000';
+              case 3000:
+                return '3000';
               case 5000:
                 return '5000';
               case 8000:
-                return '10000';
+                return '10K';
             }
             return '';
           },
@@ -280,7 +288,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                   items: <String>[
                                     'Power',
                                     'Consumption',
-                                    'Soc',
+                                    'SoC',
                                   ].map<DropdownMenuItem<String>>(
                                       (String value) {
                                     return DropdownMenuItem<String>(
@@ -477,7 +485,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
               showModalBottomSheet<void>(
                 context: context,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.circular(20.0)),
                 ),
                 builder: (BuildContext context) {
                   return Container(
@@ -655,13 +664,13 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       StationDataList response =
           await new ChargerRepository().fetchStationList();
       setState(() {
-        print(response.data.groups.length);
         if (response.success && response.data.groups.length > 0) {
           _stationGroup = response.data.groups;
           dropdownValue = response.data.groups[0].name;
           fetchChargerList(response.data.groups[0].sId);
+        } else {
+          Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
         }
-        print(dropdownValue);
       });
     } catch (e) {
       print(e);
@@ -780,6 +789,20 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       flSpotList.add(FlSpot(0.0, 0.0));
     }
     return flSpotList;
+  }
+
+
+
+
+  int getMaxData() {
+    if (pickerValue.toLowerCase().endsWith("power")) {
+        return graphResponseData.data.consumptionData.power[0].data.length;
+    } else if (pickerValue.toLowerCase().endsWith("soc")) {
+        return graphResponseData.data.consumptionData.soc[0].data.length;
+    } else if (pickerValue.toLowerCase().endsWith("consumption")) {
+        return graphResponseData.data.consumptionData.consumption[0].data.length;
+    }
+    return 0;
   }
 
   String getXTitle() {

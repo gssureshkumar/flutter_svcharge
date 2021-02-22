@@ -17,7 +17,10 @@ class ApiBaseHelper {
     var responseJson;
     try {
       String token = await _getToken();
-      final response = await http.get(_baseUrl + url,headers: {HttpHeaders.authorizationHeader: token});
+      final response = await http.get(_baseUrl + url,headers: {HttpHeaders.authorizationHeader: token}).timeout(const Duration(seconds: 15),onTimeout : () {
+        responseJson = json.encode( new ErrorMessage(false, 'The connection has timed out, Please try again!'));
+        return responseJson;
+      });
       responseJson = _returnResponse(response);
     } on SocketException {
       print('No net');
@@ -32,7 +35,10 @@ class ApiBaseHelper {
     var responseJson;
     try {
       final response = await http.post(_baseUrl + url, body: json.encode(body), headers:
-          {"Content-Type": "application/json"});
+          {"Content-Type": "application/json"}).timeout(const Duration(seconds: 15),onTimeout : () {
+        responseJson = json.encode( new ErrorMessage(false, 'The connection has timed out, Please try again!'));
+        return responseJson;
+      });
           responseJson = _returnResponse(response);
           } on SocketException {
           print('No net');
@@ -47,7 +53,10 @@ class ApiBaseHelper {
     try {
       print('postWithOutBody , url $url');
       String token = await _getToken();
-      final response = await http.post(_baseUrl + url, headers: {HttpHeaders.authorizationHeader: token});
+      final response = await http.post(_baseUrl + url, headers: {HttpHeaders.authorizationHeader: token}).timeout(const Duration(seconds: 15),onTimeout : () {
+        responseJson = json.encode( new ErrorMessage(false, 'The connection has timed out, Please try again!'));
+        return responseJson;
+      });
       responseJson = _returnResponse(response);
     } on SocketException {
       print('No net');
@@ -61,7 +70,10 @@ class ApiBaseHelper {
       print('Api Put, url $url');
       var responseJson;
       try {
-        final response = await http.put(_baseUrl + url, body: body);
+        final response = await http.put(_baseUrl + url, body: body).timeout(const Duration(seconds: 15),onTimeout : () {
+          responseJson = json.encode( new ErrorMessage(false, 'The connection has timed out, Please try again!'));
+          return responseJson;
+        });
         responseJson = _returnResponse(response);
       } on SocketException {
         print('No net');
@@ -76,7 +88,10 @@ class ApiBaseHelper {
       print('Api delete, url $url');
       var apiResponse;
       try {
-        final response = await http.delete(_baseUrl + url);
+        final response = await http.delete(_baseUrl + url).timeout(const Duration(seconds: 15),onTimeout : () {
+          apiResponse = json.encode( new ErrorMessage(false, 'The connection has timed out, Please try again!'));
+          return apiResponse;
+        });
         apiResponse = _returnResponse(response);
       } on SocketException {
         print('No net');

@@ -11,6 +11,7 @@ import 'package:sc_charge/models/StatusLogsData.dart';
 import 'package:sc_charge/models/SuccessResponseData.dart';
 import 'package:sc_charge/navigationDrawer/navigationDrawer.dart';
 import 'package:sc_charge/repository/ChargerRepository.dart';
+import 'package:sc_charge/widget/MyConstants.dart';
 import 'package:sc_charge/widget/ProgressDialog.dart';
 import 'package:flutter_conditional_rendering/conditional_switch.dart';
 import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
@@ -33,7 +34,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   List<LogsData> statusGroupLogsList = new List<LogsData>();
   List<ChargerData> statusList = new List<ChargerData>();
 
-  SingleChargerData chargerData;
+  SLogsData chargerData;
   GraphResponseData graphResponseData;
 
   List<Color> gradientColors = [
@@ -83,39 +84,47 @@ class _DynamicListViewScreenState extends State<statusPage> {
           showTitles: true,
           reservedSize: 22,
           getTextStyles: (value) => const TextStyle(
-              color: Color(0xff68737d),
-              fontWeight: FontWeight.bold,
-              fontSize: 16),
+              fontWeight: FontWeight.w400,
+              color: Color(0xff67727d),
+              fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 5:
-                return "5:00";
-              case 10:
-                return "10:00";
+              case 3:
+                return "3:00";
+              case 6:
+                return "06:00";
+              case 9:
+                return "09:00";
+              case 12:
+                return "12:00";
               case 15:
                 return "15:00";
-              case 20:
-                return "20:00";
+              case 18:
+                return "18:00";
+              case 21:
+                return "21:00";
+
             }
-            return '';
+            return "";
           },
           margin: 8,
         ),
         leftTitles: SideTitles(
           showTitles: true,
           getTextStyles: (value) => const TextStyle(
-            color: Color(0xff67727d),
-            fontWeight: FontWeight.bold,
-            fontSize: 15,
-          ),
+              fontWeight: FontWeight.w400,
+              color: Color(0xff67727d),
+              fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
               case 1000:
                 return '1000';
+              case 3000:
+                return '3000';
               case 5000:
                 return '5000';
               case 8000:
-                return '10000';
+                return '10K';
             }
             return '';
           },
@@ -158,8 +167,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     );
   }
 
-
-  void showBottomSheetMenu(SingleChargerData chargerData) {
+  void showBottomSheetMenu(SLogsData chargerData) {
     showModalBottomSheet<void>(
       context: context,
       shape: RoundedRectangleBorder(
@@ -185,7 +193,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                       ),
                       Container(
                         padding: EdgeInsets.all(15),
-                        child: Text(chargerData.data.name,
+                        child: Text(chargerData.name,
                             style: TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black,
@@ -209,7 +217,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                   fontSize: 13)),
-                          onPressed: () {},
+                          onPressed: () {
+                            startCharger(chargerData.chargerId);
+                          },
                         )),
                     Container(
                         height: 40,
@@ -225,7 +235,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                   fontWeight: FontWeight.w600,
                                   color: Colors.white,
                                   fontSize: 13)),
-                          onPressed: () {},
+                          onPressed: () {
+                            stopCharger(chargerData.chargerId);
+                          },
                         )),
                   ],
                 ),
@@ -254,7 +266,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     );
   }
 
-  void _modalBottomSheetMenu(SingleChargerData chargerData) {
+  void _modalBottomSheetMenu(SLogsData chargerData) {
     showModalBottomSheet<void>(
       isScrollControlled: true,
       context: context,
@@ -281,7 +293,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                           ),
                           Container(
                             padding: EdgeInsets.all(15),
-                            child: Text(chargerData.data.name,
+                            child: Text(chargerData.name,
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black,
@@ -306,7 +318,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       color: Colors.white,
                                       fontSize: 13)),
                               onPressed: () {
-                                startCharger(chargerData.data.serialNumber);
+                                startCharger(chargerData.chargerId);
                               },
                             )),
                         Container(
@@ -324,7 +336,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       color: Colors.white,
                                       fontSize: 13)),
                               onPressed: () {
-                                stopCharger(chargerData.data.serialNumber);
+                                stopCharger(chargerData.chargerId);
                               },
                             )),
                       ],
@@ -378,7 +390,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                   items: <String>[
                                     'Power',
                                     'Consumption',
-                                    'Soc',
+                                    'SoC',
                                   ].map<DropdownMenuItem<String>>(
                                       (String value) {
                                     return DropdownMenuItem<String>(
@@ -631,21 +643,10 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       color: Color(0xff0F123F),
                                       fontSize: 14),
                                 ))),
-                        Container(
-                            padding: EdgeInsets.all(10.0),
-                            alignment: Alignment.center,
-                            child:
-                                new Text(' - ' + statusLogsList[index].action,
-                                    style: GoogleFonts.poppins(
-                                      textStyle: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xff818E94),
-                                          fontSize: 12),
-                                    ))),
                         new GestureDetector(
                           onTap: () {
-                            fetchSingleChargerData(
-                                statusLogsList[index].chargerId);
+                            chargerData = statusLogsList[index];
+                            showBottomSheetMenu(statusLogsList[index]);
                           },
                           child: Container(
                               padding: EdgeInsets.all(10.0),
@@ -658,7 +659,18 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                         color: Color(0xff818E94),
                                         fontSize: 12),
                                   ))),
-                        )
+                        ),
+                        Container(
+                            padding: EdgeInsets.all(10.0),
+                            alignment: Alignment.center,
+                            child:
+                                new Text(' - ' + statusLogsList[index].action,
+                                    style: GoogleFonts.poppins(
+                                      textStyle: TextStyle(
+                                          fontWeight: FontWeight.w400,
+                                          color: Color(0xff818E94),
+                                          fontSize: 12),
+                                    )))
                       ])))
             ])));
   }
@@ -715,13 +727,13 @@ class _DynamicListViewScreenState extends State<statusPage> {
     }
   }
 
-  fetchDeviceLogs(SingleChargerData chargerData) async {
+  fetchDeviceLogs(SLogsData chargerData) async {
     try {
       ProgressDialogs.showLoadingDialog(context, _keyLoader);
       final DateFormat formatter = DateFormat('yyyy-MM-dd');
       final String formatted = formatter.format(selectedDate);
       graphResponseData = await new ChargerRepository()
-          .fetchGraphLogList(chargerData.data.serialNumber, formatted);
+          .fetchGraphLogList(chargerData.chargerId, formatted);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
       if (graphResponseData.success) {
         _modalBottomSheetMenu(chargerData);
@@ -803,30 +815,30 @@ class _DynamicListViewScreenState extends State<statusPage> {
       StationDataList response =
           await new ChargerRepository().fetchStationList();
       setState(() {
-        print(response.data.groups.length);
         if (response.success && response.data.groups.length > 0) {
           _stationGroup = response.data.groups;
           dropdownValue = response.data.groups[0].name;
           fetchStatusLogList(response.data.groups[0].sId);
+        } else {
+          Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
         }
-        print(dropdownValue);
       });
     } catch (e) {
       print(e);
     }
   }
 
-  fetchSingleChargerData(String serialNum) async {
-    try {
-      SingleChargerData response =
-          await new ChargerRepository().fetchSingleChargerData(serialNum);
-      setState(() {
-        showBottomSheetMenu(response);
-      });
-    } catch (e) {
-      print(e);
-    }
-  }
+  // fetchSingleChargerData(String serialNum) async {
+  //   try {
+  //     SingleChargerData response =
+  //         await new ChargerRepository().fetchSingleChargerData(serialNum);
+  //     setState(() {
+  //       showBottomSheetMenu(response);
+  //     });
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   String convertDateFromString(String strDate) {
     DateTime todayDate =
@@ -858,6 +870,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
           actions: <Widget>[
             new GestureDetector(
                 onTap: () {
+                  MyConstants.navPosition = 1;
                   Navigator.push(
                       context,
                       new MaterialPageRoute(

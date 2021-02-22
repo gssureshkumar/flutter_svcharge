@@ -33,6 +33,7 @@ class SLogsData {
   String chargerId;
   String action;
   String timeStamp;
+  String name;
   String duration;
   int consumption;
 
@@ -40,6 +41,7 @@ class SLogsData {
       {this.chargerId,
         this.action,
         this.timeStamp,
+        this.name,
         this.duration,
         this.consumption});
 
@@ -47,6 +49,7 @@ class SLogsData {
     chargerId = json['chargerId'];
     action = json['action'];
     timeStamp = json['timeStamp'];
+    name = json['name'];
     duration = json['duration'];
     consumption = json['consumption'];
   }
@@ -56,6 +59,7 @@ class SLogsData {
     data['chargerId'] = this.chargerId;
     data['action'] = this.action;
     data['timeStamp'] = this.timeStamp;
+    data['name'] = this.name;
     data['duration'] = this.duration;
     data['consumption'] = this.consumption;
     return data;

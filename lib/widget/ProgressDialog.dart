@@ -11,18 +11,16 @@ class ProgressDialogs {
               onWillPop: () async => false,
               child: SimpleDialog(
                   key: key,
-                  backgroundColor: Colors.black54,
+                  backgroundColor: Colors.white,
                   children: <Widget>[
                     Center(
                       child: Column(children: [
-                        CircularProgressIndicator(),
-                        SizedBox(
-                          height: 10,
+                        Image.asset(
+                          "assets/loader_spinner.gif",
+                          fit: BoxFit.cover,
+                          width: 50,
+                          height: 50,
                         ),
-                        Text(
-                          "Please Wait....",
-                          style: TextStyle(color: Colors.green),
-                        )
                       ]),
                     )
                   ]));

@@ -60,6 +60,7 @@ flutter:
     - assets/small_app_icon.svg
     - assets/bottom_backgroud.png
     - assets/image_logo.svg
+    - assets/loader_spinner.gif
     - assets/charger.png
     - assets/charger_fleet.png
     - assets/buses.png
