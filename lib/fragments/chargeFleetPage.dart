@@ -663,17 +663,18 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     try {
       StationDataList response =
           await new ChargerRepository().fetchStationList();
-      setState(() {
-        if (response.success && response.data.groups.length > 0) {
-          _stationGroup = response.data.groups;
-          dropdownValue = response.data.groups[0].name;
-          fetchChargerList(response.data.groups[0].sId);
-        } else {
-          Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-        }
-      });
+      print(response);
+        setState(() {
+          if (response.success && response.data.groups.length > 0) {
+            _stationGroup = response.data.groups;
+            dropdownValue = response.data.groups[0].name;
+            fetchChargerList(response.data.groups[0].sId);
+          }
+        });
+
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -683,13 +684,16 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           await new ChargerRepository().fetchChargerList(chargerId);
       setState(() {
         Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-        print(response.data.length);
-        if (response.success) {
-          chargerDataList = response.data;
+        if(response != null) {
+          print(response.data.length);
+          if (response.success) {
+            chargerDataList = response.data;
+          }
         }
       });
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -699,16 +703,19 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       SuccessResponseData response =
           await new ChargerRepository().startCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-      Fluttertoast.showToast(
-          msg: response.message,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black12,
-          textColor: Colors.white,
-          fontSize: 14.0);
+      if(response != null) {
+        Fluttertoast.showToast(
+            msg: response.message,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.black12,
+            textColor: Colors.white,
+            fontSize: 14.0);
+      }
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -720,7 +727,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       graphResponseData = await new ChargerRepository()
           .fetchGraphLogList(chargerData.serialNumber, formatted);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-      if (graphResponseData.success) {
+      if (graphResponseData != null &&graphResponseData.success) {
         _modalBottomSheetMenu(chargerData);
         setState(() {
           statusList = graphResponseData.data.logsData;
@@ -728,6 +735,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       }
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -826,6 +834,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           fontSize: 14.0);
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 

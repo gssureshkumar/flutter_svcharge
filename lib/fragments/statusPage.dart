@@ -705,6 +705,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
           fontSize: 14.0);
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -724,6 +725,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
           fontSize: 14.0);
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -743,6 +745,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
       }
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -825,6 +828,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
       });
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -859,6 +863,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
       });
     } catch (e) {
       print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
