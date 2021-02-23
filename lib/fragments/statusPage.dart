@@ -114,6 +114,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
           getTitles: (value) {
             return value.round().toString();
           },
+          interval: calculateNumber(((15/100) * maxChargerValue).round()).toDouble(),
           reservedSize: 28,
           margin: 12,
         ),
@@ -153,6 +154,13 @@ class _DynamicListViewScreenState extends State<statusPage> {
     );
   }
 
+  int calculateNumber(int number) {
+    int a = number % 100;
+    if (a > 0) {
+      return (number ~/ 100) * 100 + 100;
+    }
+    return number;
+  }
   void showBottomSheetMenu(SLogsData chargerData) {
     showModalBottomSheet<void>(
       context: context,
