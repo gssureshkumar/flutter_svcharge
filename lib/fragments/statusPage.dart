@@ -45,7 +45,6 @@ class _DynamicListViewScreenState extends State<statusPage> {
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
-
     final DateTime picked = await showDatePicker(
       context: context,
       initialDate: selectedDate, // Refer step 1
@@ -662,7 +661,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child: new Text(' - ' + statusLogsList[index].action,
+                            child:
+                                new Text(' - ' + statusLogsList[index].action,
                                     style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           fontWeight: FontWeight.w400,
@@ -940,6 +940,13 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       dropdownValue = newValue;
                                       print(dropdownValue);
                                     });
+                                    ProgressDialogs.showLoadingDialog(
+                                        context, _keyLoader);
+                                    for (var i = 0; i < _stationGroup.length;i++) {
+                                      if (_stationGroup[i].name.endsWith(newValue)) {
+                                        fetchStatusLogList(_stationGroup[i].sId);
+                                      }
+                                    }
                                   },
                                   items: _stationGroup
                                       .map<DropdownMenuItem<String>>(
