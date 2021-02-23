@@ -29,6 +29,11 @@ class ChargerRepository {
     return ChargerDataList.fromJson(response);
   }
 
+  Future<ChargerDataList> backgroundCall(String chargerId) async {
+    final response = await _helper.getBackgroundCall("device/read-devices/" + chargerId);
+    return ChargerDataList.fromJson(response);
+  }
+
   Future<SingleChargerData> fetchSingleChargerData(String serialNumber) async {
     String chargerId = await _getChargerId();
     final response = await _helper.get("device/readCharger/" + serialNumber+"/"+chargerId);

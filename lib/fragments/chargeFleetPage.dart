@@ -653,6 +653,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
     });
     fetchStationList();
+
   }
 
   String dropdownValue;
@@ -702,9 +703,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   backgroundChargerList(String chargerId) async {
     try {
       ChargerDataList response =
-          await new ChargerRepository().fetchChargerList(chargerId);
+          await new ChargerRepository().backgroundCall(chargerId);
       setState(() {
-        if (response != null) {
+         if (response != null) {
           if (response.success) {
             chargerDataList = response.data;
           }
@@ -726,9 +727,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         Fluttertoast.showToast(
             msg: response.message,
             toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
+            gravity: ToastGravity.CENTER,
             timeInSecForIosWeb: 1,
-            backgroundColor: Colors.black12,
+            backgroundColor: Colors.black54,
             textColor: Colors.white,
             fontSize: 14.0);
       }
@@ -839,9 +840,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       Fluttertoast.showToast(
           msg: response.message,
           toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
+          gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black12,
+          backgroundColor: Colors.black54,
           textColor: Colors.white,
           fontSize: 14.0);
     } catch (e) {

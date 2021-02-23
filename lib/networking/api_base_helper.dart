@@ -33,6 +33,25 @@ class ApiBaseHelper {
     return responseJson;
   }
 
+  Future<dynamic> getBackgroundCall(String url) async {
+    print('Api Get, url $url');
+    var responseJson;
+    try {
+      String token = await _getToken();
+      final response = await http.get(_baseUrl + url, headers: {
+        HttpHeaders.authorizationHeader: token
+      }).timeout(const Duration(seconds: 15), onTimeout: () {
+        throw FetchDataException('');
+
+      });
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      throw FetchDataException('');
+    }
+    print('api get recieved!');
+    return responseJson;
+  }
+
   Future<dynamic> post(String url, dynamic body) async {
     print('Api Post, url ' + json.encode(body));
     var responseJson;
@@ -144,9 +163,9 @@ showErrorMessage(String message) {
   Fluttertoast.showToast(
       msg: message,
       toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
+      gravity: ToastGravity.CENTER,
       timeInSecForIosWeb: 1,
-      backgroundColor: Colors.black12,
+      backgroundColor: Colors.black54,
       textColor: Colors.white,
       fontSize: 14.0);
 }
