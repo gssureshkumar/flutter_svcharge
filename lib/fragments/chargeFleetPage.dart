@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:date_format/date_format.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,7 +30,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   List<ChargerData> chargerDataList = new List<ChargerData>();
   List<LogsData> statusList = new List<LogsData>();
-
+  Timer timer;
   ChargerData chargerData;
   GraphResponseData graphResponseData;
   double maxChargerValue = 10000;
@@ -86,28 +88,16 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
               fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 2:
-                return "02";
               case 4:
                 return "04";
-              case 6:
-                return "06";
               case 8:
                 return "08";
-              case 10:
-                return "10";
               case 12:
                 return "12";
-              case 14:
-                return "14";
               case 16:
                 return "16";
-              case 18:
-                return "18";
               case 20:
                 return "20";
-              case 22:
-                return "22";
             }
             return "";
           },
@@ -319,8 +309,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     child: Row(
                                       children: <Widget>[
                                         Container(
-                                            child: SvgPicture.asset('assets/clander_icon.svg',
-                                                height: 30, width: 30)),
+                                            child: SvgPicture.asset(
+                                                'assets/clander_icon.svg',
+                                                height: 30,
+                                                width: 30)),
                                         Container(
                                             padding: EdgeInsets.fromLTRB(
                                                 30, 15, 30, 15),
@@ -664,6 +656,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   }
 
   String dropdownValue;
+  String chargerValue;
 
   List<Groups> _stationGroup = [];
 
@@ -676,6 +669,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         if (response.success && response.data.groups.length > 0) {
           _stationGroup = response.data.groups;
           dropdownValue = response.data.groups[0].name;
+          chargerValue = response.data.groups[0].sId;
           fetchChargerList(response.data.groups[0].sId);
         }
       });
@@ -692,7 +686,25 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       setState(() {
         Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
         if (response != null) {
-          print(response.data.length);
+          if (response.success) {
+            chargerDataList = response.data;
+            timer = Timer.periodic(Duration(seconds: 30),
+                (Timer t) => backgroundChargerList(chargerValue));
+          }
+        }
+      });
+    } catch (e) {
+      print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    }
+  }
+
+  backgroundChargerList(String chargerId) async {
+    try {
+      ChargerDataList response =
+          await new ChargerRepository().fetchChargerList(chargerId);
+      setState(() {
+        if (response != null) {
           if (response.success) {
             chargerDataList = response.data;
           }
@@ -700,7 +712,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       });
     } catch (e) {
       print(e);
-      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
     }
   }
 
@@ -711,6 +722,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           await new ChargerRepository().startCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
       if (response != null) {
+        backgroundChargerList(chargerValue);
         Fluttertoast.showToast(
             msg: response.message,
             toastLength: Toast.LENGTH_SHORT,
@@ -823,6 +835,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       SuccessResponseData response =
           await new ChargerRepository().stopCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      backgroundChargerList(chargerValue);
       Fluttertoast.showToast(
           msg: response.message,
           toastLength: Toast.LENGTH_SHORT,
@@ -906,6 +919,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       if (_stationGroup[i]
                                           .name
                                           .endsWith(newValue)) {
+                                        chargerValue = _stationGroup[i].sId;
                                         fetchChargerList(_stationGroup[i].sId);
                                       }
                                     }
@@ -948,5 +962,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                     ),
                   ])),
         ));
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    super.dispose();
   }
 }

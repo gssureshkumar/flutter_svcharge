@@ -91,28 +91,16 @@ class _DynamicListViewScreenState extends State<statusPage> {
               fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 2:
-                return "02";
               case 4:
                 return "04";
-              case 6:
-                return "06";
               case 8:
                 return "08";
-              case 10:
-                return "10";
               case 12:
                 return "12";
-              case 14:
-                return "14";
               case 16:
                 return "16";
-              case 18:
-                return "18";
               case 20:
                 return "20";
-              case 22:
-                return "22";
             }
             return "";
           },
@@ -593,6 +581,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     return Container(
         padding: EdgeInsets.fromLTRB(0, 8, 0, 8),
         child: Container(
+            padding: EdgeInsets.fromLTRB(5, 0, 10, 0),
             decoration: BoxDecoration(
                 border: Border.all(
                   color: Colors.black12,
@@ -673,8 +662,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
-                            child:
-                                new Text(' - ' + statusLogsList[index].action,
+                            child: new Text(' - ' + statusLogsList[index].action,
                                     style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           fontWeight: FontWeight.w400,
