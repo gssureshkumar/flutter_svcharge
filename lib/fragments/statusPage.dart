@@ -45,6 +45,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
+
     final DateTime picked = await showDatePicker(
       context: context,
       initialDate: selectedDate, // Refer step 1
@@ -417,17 +418,26 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                 alignment: Alignment.center,
                                 child: new GestureDetector(
                                     onTap: () => _selectDate(context),
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(30, 15, 30, 15),
-                                        child: Text(
-                                          "${selectedDate.toLocal()}"
-                                              .split(' ')[0],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.black,
-                                              fontSize: 13),
-                                        )))),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Container(
+                                            child: SvgPicture.asset(
+                                                'assets/clander_icon.svg',
+                                                height: 30,
+                                                width: 30)),
+                                        Container(
+                                            padding: EdgeInsets.fromLTRB(
+                                                30, 15, 30, 15),
+                                            child: Text(
+                                              "${selectedDate.toLocal()}"
+                                                  .split(' ')[0],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Colors.black,
+                                                  fontSize: 13),
+                                            )),
+                                      ],
+                                    ))),
                           ],
                         )),
                     Conditional.single(

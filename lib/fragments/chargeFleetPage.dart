@@ -31,7 +31,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
 
   ChargerData chargerData;
   GraphResponseData graphResponseData;
-  double maxChargerValue =10000;
+  double maxChargerValue = 10000;
 
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
@@ -108,7 +108,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                 return "20";
               case 22:
                 return "22";
-
             }
             return "";
           },
@@ -317,17 +316,24 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                 alignment: Alignment.center,
                                 child: new GestureDetector(
                                     onTap: () => _selectDate(context),
-                                    child: Container(
-                                        padding:
-                                            EdgeInsets.fromLTRB(30, 15, 30, 15),
-                                        child: Text(
-                                          "${selectedDate.toLocal()}"
-                                              .split(' ')[0],
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w400,
-                                              color: Colors.black,
-                                              fontSize: 13),
-                                        )))),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Container(
+                                            child: SvgPicture.asset('assets/clander_icon.svg',
+                                                height: 30, width: 30)),
+                                        Container(
+                                            padding: EdgeInsets.fromLTRB(
+                                                30, 15, 30, 15),
+                                            child: Text(
+                                              "${selectedDate.toLocal()}"
+                                                  .split(' ')[0],
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w400,
+                                                  color: Colors.black,
+                                                  fontSize: 13),
+                                            )),
+                                      ],
+                                    ))),
                           ],
                         )),
                     Container(
@@ -367,23 +373,22 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               fontSize: 15)),
                     ),
                     Conditional.single(
-                      context: context,
-                      conditionBuilder: (BuildContext context) =>
-                          statusList.length > 0,
-                      widgetBuilder: (BuildContext context) => Container(
-                        height: MediaQuery.of(context).size.height * 0.65,
-                        padding: EdgeInsets.all(15.0),
-                        child: new ListView.builder(
-                            itemCount: statusList.length,
-                            itemBuilder: (BuildContext ctxt, int index) =>
-                                buildStatusBody(ctxt, index)),
-                      ),
-                      fallbackBuilder: (BuildContext context) => Container(
-                        padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
-                        alignment: Alignment.center,
-                        child: Text('No Logs found!!!'),
-                      )
-                    ),
+                        context: context,
+                        conditionBuilder: (BuildContext context) =>
+                            statusList.length > 0,
+                        widgetBuilder: (BuildContext context) => Container(
+                              height: MediaQuery.of(context).size.height * 0.65,
+                              padding: EdgeInsets.all(15.0),
+                              child: new ListView.builder(
+                                  itemCount: statusList.length,
+                                  itemBuilder: (BuildContext ctxt, int index) =>
+                                      buildStatusBody(ctxt, index)),
+                            ),
+                        fallbackBuilder: (BuildContext context) => Container(
+                              padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                              alignment: Alignment.center,
+                              child: Text('No Logs found!!!'),
+                            )),
                   ],
                 ),
               ],
@@ -667,14 +672,13 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       StationDataList response =
           await new ChargerRepository().fetchStationList();
       print(response);
-        setState(() {
-          if (response.success && response.data.groups.length > 0) {
-            _stationGroup = response.data.groups;
-            dropdownValue = response.data.groups[0].name;
-            fetchChargerList(response.data.groups[0].sId);
-          }
-        });
-
+      setState(() {
+        if (response.success && response.data.groups.length > 0) {
+          _stationGroup = response.data.groups;
+          dropdownValue = response.data.groups[0].name;
+          fetchChargerList(response.data.groups[0].sId);
+        }
+      });
     } catch (e) {
       print(e);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
@@ -687,7 +691,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           await new ChargerRepository().fetchChargerList(chargerId);
       setState(() {
         Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-        if(response != null) {
+        if (response != null) {
           print(response.data.length);
           if (response.success) {
             chargerDataList = response.data;
@@ -706,7 +710,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       SuccessResponseData response =
           await new ChargerRepository().startCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-      if(response != null) {
+      if (response != null) {
         Fluttertoast.showToast(
             msg: response.message,
             toastLength: Toast.LENGTH_SHORT,
@@ -730,7 +734,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       graphResponseData = await new ChargerRepository()
           .fetchGraphLogList(chargerData.serialNumber, formatted);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-      if (graphResponseData != null &&graphResponseData.success) {
+      if (graphResponseData != null && graphResponseData.success) {
         _modalBottomSheetMenu(chargerData);
         setState(() {
           statusList = graphResponseData.data.logsData;
@@ -753,10 +757,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          double yAxis= double.parse(graphResponseData.data.consumptionData.power[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted),yAxis));
-          if(maxChargerValue < yAxis){
-            maxChargerValue =yAxis +1000;
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.power[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
           }
         }
       } else {
@@ -770,25 +775,32 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          double yAxis= double.parse(graphResponseData.data.consumptionData.soc[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted),yAxis));
-          if(maxChargerValue < yAxis){
-            maxChargerValue =yAxis +1000;
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.soc[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
           }
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
       }
     } else if (pickerValue.toLowerCase().endsWith("consumption")) {
-      if (graphResponseData.data.consumptionData.consumption[0].data.length > 0) {
-        for (var i = 0; i < graphResponseData.data.consumptionData.consumption[0].data.length; i++) {
+      if (graphResponseData.data.consumptionData.consumption[0].data.length >
+          0) {
+        for (var i = 0;
+            i <
+                graphResponseData
+                    .data.consumptionData.consumption[0].data.length;
+            i++) {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          double yAxis= double.parse(graphResponseData.data.consumptionData.consumption[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted),yAxis));
-          if(maxChargerValue < yAxis){
-              maxChargerValue =yAxis +1000;
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.consumption[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
           }
         }
       } else {
@@ -799,7 +811,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     }
     return flSpotList;
   }
-
 
   String getXTitle() {
     final String formatter = formatDate(selectedDate, [MM]);
