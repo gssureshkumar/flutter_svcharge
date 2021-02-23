@@ -33,7 +33,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   List<SLogsData> statusLogsList = new List<SLogsData>();
   List<LogsData> statusGroupLogsList = new List<LogsData>();
   List<ChargerData> statusList = new List<ChargerData>();
-
+  double maxChargerValue = 10000;
   SLogsData chargerData;
   GraphResponseData graphResponseData;
 
@@ -60,6 +60,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   }
 
   LineChartData avgData() {
+    getLineChartData();
     return LineChartData(
       lineTouchData: LineTouchData(enabled: false),
       gridData: FlGridData(
@@ -89,21 +90,28 @@ class _DynamicListViewScreenState extends State<statusPage> {
               fontSize: 12),
           getTitles: (value) {
             switch (value.toInt()) {
-              case 3:
-                return "3:00";
+              case 2:
+                return "02";
+              case 4:
+                return "04";
               case 6:
-                return "06:00";
-              case 9:
-                return "09:00";
+                return "06";
+              case 8:
+                return "08";
+              case 10:
+                return "10";
               case 12:
-                return "12:00";
-              case 15:
-                return "15:00";
+                return "12";
+              case 14:
+                return "14";
+              case 16:
+                return "16";
               case 18:
-                return "18:00";
-              case 21:
-                return "21:00";
-
+                return "18";
+              case 20:
+                return "20";
+              case 22:
+                return "22";
             }
             return "";
           },
@@ -114,19 +122,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
           getTextStyles: (value) => const TextStyle(
               fontWeight: FontWeight.w400,
               color: Color(0xff67727d),
-              fontSize: 12),
+              fontSize: 10),
           getTitles: (value) {
-            switch (value.toInt()) {
-              case 1000:
-                return '1000';
-              case 3000:
-                return '3000';
-              case 5000:
-                return '5000';
-              case 8000:
-                return '10K';
-            }
-            return '';
+            return value.round().toString();
           },
           reservedSize: 28,
           margin: 12,
@@ -138,7 +136,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
       minX: 0,
       maxX: 24,
       minY: 0,
-      maxY: 10000,
+      maxY: maxChargerValue,
       lineBarsData: [
         LineChartBarData(
           spots: getLineChartData(),
@@ -476,20 +474,22 @@ class _DynamicListViewScreenState extends State<statusPage> {
                               fontSize: 15)),
                     ),
                     Conditional.single(
-                      context: context,
-                      conditionBuilder: (BuildContext context) =>
-                          statusList.length > 0,
-                      widgetBuilder: (BuildContext context) => Container(
-                        height: MediaQuery.of(context).size.height * 0.65,
-                        padding: EdgeInsets.all(15.0),
-                        child: new ListView.builder(
-                            itemCount: statusList.length,
-                            itemBuilder: (BuildContext ctxt, int index) =>
-                                buildStatusBody(ctxt, index)),
-                      ),
-                      fallbackBuilder: (BuildContext context) =>
-                          Text('No Logs found!!!'),
-                    ),
+                        context: context,
+                        conditionBuilder: (BuildContext context) =>
+                            statusList.length > 0,
+                        widgetBuilder: (BuildContext context) => Container(
+                              height: MediaQuery.of(context).size.height * 0.65,
+                              padding: EdgeInsets.all(15.0),
+                              child: new ListView.builder(
+                                  itemCount: statusList.length,
+                                  itemBuilder: (BuildContext ctxt, int index) =>
+                                      buildStatusBody(ctxt, index)),
+                            ),
+                        fallbackBuilder: (BuildContext context) => Container(
+                              padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                              alignment: Alignment.center,
+                              child: Text('No Logs found!!!'),
+                            )),
                   ],
                 ),
               ],
@@ -651,12 +651,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
                           child: Container(
                               padding: EdgeInsets.all(10.0),
                               alignment: Alignment.center,
-                              child: new Text(
-                                  ' - ' + statusLogsList[index].chargerId,
+                              child: new Text(statusLogsList[index].name,
                                   style: GoogleFonts.poppins(
                                     textStyle: TextStyle(
+                                        decoration: TextDecoration.underline,
                                         fontWeight: FontWeight.w400,
-                                        color: Color(0xff818E94),
+                                        color: Color(0xff0F123F),
                                         fontSize: 12),
                                   ))),
                         ),
@@ -750,6 +750,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   }
 
   List<FlSpot> getLineChartData() {
+    print(pickerValue);
     List<FlSpot> flSpotList = new List<FlSpot>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
@@ -759,10 +760,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          flSpotList.add(FlSpot(
-              double.parse(formatted),
-              double.parse(
-                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.power[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
+          }
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -775,10 +778,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          flSpotList.add(FlSpot(
-              double.parse(formatted),
-              double.parse(
-                  graphResponseData.data.consumptionData.soc[0].data[i].y)));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.soc[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
+          }
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -794,10 +799,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
           DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
           final String formatted = formatDate(todayDate, [HH]);
-          flSpotList.add(FlSpot(
-              double.parse(formatted),
-              double.parse(graphResponseData
-                  .data.consumptionData.consumption[0].data[i].y)));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.consumption[0].data[i].y);
+          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          if (maxChargerValue < yAxis) {
+            maxChargerValue = yAxis + 1000;
+          }
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -856,7 +863,6 @@ class _DynamicListViewScreenState extends State<statusPage> {
           await new ChargerRepository().fetchStatusLogsList(chargerId);
       setState(() {
         Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
-        print(response.data.length);
         if (response.success) {
           statusLogsList = response.data;
         }
