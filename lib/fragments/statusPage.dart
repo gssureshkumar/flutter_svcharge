@@ -33,9 +33,14 @@ class _DynamicListViewScreenState extends State<statusPage> {
   List<SLogsData> statusLogsList = new List<SLogsData>();
   List<LogsData> statusGroupLogsList = new List<LogsData>();
   List<ChargerData> statusList = new List<ChargerData>();
-  double maxChargerValue = 10000;
   SLogsData chargerData;
   GraphResponseData graphResponseData;
+  double maxChargerValue;
+
+  double minXAxisValue;
+  double maxXAxisValue;
+
+  int xAxisPos;
 
   List<Color> gradientColors = [
     const Color(0xff23b6e6),
@@ -60,9 +65,14 @@ class _DynamicListViewScreenState extends State<statusPage> {
   }
 
   LineChartData avgData() {
-    getLineChartData();
+    xAxisPos = 0;
+    List<FlSpot> flSpotList = getLineChartData();
     return LineChartData(
-      lineTouchData: LineTouchData(enabled: false),
+      lineTouchData: LineTouchData(
+          enabled: true,
+          touchTooltipData: LineTouchTooltipData(
+              tooltipBgColor: Colors.white,
+              getTooltipItems: defaultLineTooltipItem)),
       gridData: FlGridData(
         show: true,
         drawHorizontalLine: true,
@@ -83,26 +93,17 @@ class _DynamicListViewScreenState extends State<statusPage> {
         show: true,
         bottomTitles: SideTitles(
           showTitles: true,
-          reservedSize: 22,
           getTextStyles: (value) => const TextStyle(
               fontWeight: FontWeight.w400,
               color: Color(0xff67727d),
               fontSize: 12),
           getTitles: (value) {
-            switch (value.toInt()) {
-              case 4:
-                return "04";
-              case 8:
-                return "08";
-              case 12:
-                return "12";
-              case 16:
-                return "16";
-              case 20:
-                return "20";
-            }
-            return "";
+            String dateTime = minutesToDateOfDay(value.round());
+            return dateTime;
           },
+          interval: (calculateNumber(
+                  ((25 / 100) * (maxXAxisValue - minXAxisValue)).round()))
+              .toDouble(),
           margin: 8,
         ),
         leftTitles: SideTitles(
@@ -114,7 +115,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
           getTitles: (value) {
             return value.round().toString();
           },
-          interval: calculateNumber(((15/100) * maxChargerValue).round()).toDouble(),
+          interval: calculateNumber(((15 / 100) * maxChargerValue).round())
+              .toDouble(),
           reservedSize: 28,
           margin: 12,
         ),
@@ -122,13 +124,13 @@ class _DynamicListViewScreenState extends State<statusPage> {
       borderData: FlBorderData(
           show: true,
           border: Border.all(color: const Color(0xff37434d), width: 1)),
-      minX: 0,
-      maxX: 24,
+      minX: minXAxisValue,
+      maxX: maxXAxisValue,
       minY: 0,
       maxY: maxChargerValue,
       lineBarsData: [
         LineChartBarData(
-          spots: getLineChartData(),
+          spots: flSpotList,
           isCurved: true,
           colors: [
             ColorTween(begin: gradientColors[0], end: gradientColors[1])
@@ -154,13 +156,58 @@ class _DynamicListViewScreenState extends State<statusPage> {
     );
   }
 
+  String minutesToTimeOfDay(int minutes) {
+    Duration duration = Duration(minutes: minutes);
+    var date = DateTime.fromMillisecondsSinceEpoch(duration.inMilliseconds);
+    var formattedDate = DateFormat.yMMMd().add_Hm().format(date);
+    return formattedDate;
+  }
+
+  String minutesToDateOfDay(int minutes) {
+    Duration duration = Duration(minutes: minutes);
+    var date = DateTime.fromMillisecondsSinceEpoch(duration.inMilliseconds);
+    var formattedDate = DateFormat.Hm().format(date);
+    return formattedDate;
+  }
+
+  List<LineTooltipItem> defaultLineTooltipItem(List<LineBarSpot> touchedSpots) {
+    xAxisPos = 0;
+    if (touchedSpots == null) {
+      return null;
+    }
+
+    return touchedSpots.map((LineBarSpot touchedSpot) {
+      if (touchedSpot == null) {
+        return null;
+      }
+      final TextStyle textStyle = TextStyle(
+        color: touchedSpot.bar.colors[0],
+        fontWeight: FontWeight.bold,
+        fontSize: 14,
+      );
+      return LineTooltipItem(
+          (minutesToTimeOfDay(touchedSpot.x.toInt()) +
+              " : " +
+              touchedSpot.y.toString()),
+          textStyle);
+    }).toList();
+  }
+
   int calculateNumber(int number) {
-    int a = number % 100;
-    if (a > 0) {
-      return (number ~/ 100) * 100 + 100;
+    if (maxChargerValue > 500) {
+      int a = number % 100;
+      if (a > 0) {
+        return (number ~/ 100) * 100 + 100;
+      }
+    } else {
+      int a = number % 10;
+      if (a > 0) {
+        return (number ~/ 10) * 10 + 10;
+      }
     }
     return number;
   }
+
   void showBottomSheetMenu(SLogsData chargerData) {
     showModalBottomSheet<void>(
       context: context,
@@ -491,7 +538,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       buildStatusBody(ctxt, index)),
                             ),
                         fallbackBuilder: (BuildContext context) => Container(
-                              padding: EdgeInsets.fromLTRB(0, 50, 0, 0),
+                              padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
                               alignment: Alignment.center,
                               child: Text('No Logs found!!!'),
                             )),
@@ -556,18 +603,31 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                         width: 30)),
                           ),
                         ),
-                        Container(
-                            padding: EdgeInsets.all(10.0),
-                            alignment: Alignment.center,
-                            child: new Text(
-                                convertDateFromString(
-                                    statusGroupLogsList[index].timeStamp),
-                                style: GoogleFonts.poppins(
-                                  textStyle: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xff0F123F),
-                                      fontSize: 18),
-                                ))),
+                        new Column(children: <Widget>[
+                          Container(
+                              padding: EdgeInsets.fromLTRB(10,10,10,0),
+                              alignment: Alignment.center,
+                              child: new Text(
+                                  convertTimeFromString(
+                                      statusLogsList[index].timeStamp),
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xff0F123F),
+                                        fontSize: 14),
+                                  ))),
+                          Container(
+                              alignment: Alignment.center,
+                              child: new Text(
+                                  convertDateFromString(
+                                      statusLogsList[index].timeStamp),
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff818E94),
+                                        fontSize: 9),
+                                  )))
+                        ]),
                         Container(
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
@@ -637,18 +697,31 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                         width: 30)),
                           ),
                         ),
-                        Container(
-                            padding: EdgeInsets.all(10.0),
-                            alignment: Alignment.center,
-                            child: new Text(
-                                convertDateFromString(
-                                    statusLogsList[index].timeStamp),
-                                style: GoogleFonts.poppins(
-                                  textStyle: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      color: Color(0xff0F123F),
-                                      fontSize: 14),
-                                ))),
+                        new Column(children: <Widget>[
+                          Container(
+                              padding: EdgeInsets.fromLTRB(10,10,10,0),
+                              alignment: Alignment.center,
+                              child: new Text(
+                                  convertTimeFromString(
+                                      statusLogsList[index].timeStamp),
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        color: Color(0xff0F123F),
+                                        fontSize: 14),
+                                  ))),
+                          Container(
+                              alignment: Alignment.center,
+                              child: new Text(
+                                  convertDateFromString(
+                                      statusLogsList[index].timeStamp),
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff818E94),
+                                        fontSize: 9),
+                                  )))
+                        ]),
                         new GestureDetector(
                           onTap: () {
                             chargerData = statusLogsList[index];
@@ -671,6 +744,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                             alignment: Alignment.center,
                             child:
                                 new Text(' - ' + statusLogsList[index].action,
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.poppins(
                                       textStyle: TextStyle(
                                           fontWeight: FontWeight.w400,
@@ -756,22 +830,28 @@ class _DynamicListViewScreenState extends State<statusPage> {
   }
 
   List<FlSpot> getLineChartData() {
-    print(pickerValue);
+    maxChargerValue = 10;
+    minXAxisValue = 0;
+    maxXAxisValue = 0;
+    List<int> xAxisValue = [];
     List<FlSpot> flSpotList = new List<FlSpot>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
         for (var i = 0;
             i < graphResponseData.data.consumptionData.power[0].data.length;
             i++) {
-          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+          DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
-          final String formatted = formatDate(todayDate, [HH]);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.power[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          Duration duration =
+              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
+          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
+
           if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis + 1000;
+            maxChargerValue = yAxis;
           }
+          xAxisValue.add(duration.inMinutes);
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -781,15 +861,19 @@ class _DynamicListViewScreenState extends State<statusPage> {
         for (var i = 0;
             i < graphResponseData.data.consumptionData.soc[0].data.length;
             i++) {
-          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a")
+          DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
-          final String formatted = formatDate(todayDate, [HH]);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.soc[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          Duration duration =
+              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
+
+          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
+
           if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis + 1000;
+            maxChargerValue = yAxis;
           }
+          xAxisValue.add(duration.inMinutes);
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -802,15 +886,19 @@ class _DynamicListViewScreenState extends State<statusPage> {
                 graphResponseData
                     .data.consumptionData.consumption[0].data.length;
             i++) {
-          DateTime todayDate = new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(
+          DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
-          final String formatted = formatDate(todayDate, [HH]);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].y);
-          flSpotList.add(FlSpot(double.parse(formatted), yAxis));
+          Duration duration =
+              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
+
+          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
+
           if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis + 1000;
+            maxChargerValue = yAxis;
           }
+          xAxisValue.add(duration.inMinutes);
         }
       } else {
         flSpotList.add(FlSpot(0.0, 0.0));
@@ -818,6 +906,13 @@ class _DynamicListViewScreenState extends State<statusPage> {
     } else {
       flSpotList.add(FlSpot(0.0, 0.0));
     }
+
+    if (xAxisValue.isNotEmpty) {
+      xAxisValue.sort();
+      minXAxisValue = xAxisValue.first.toDouble();
+      maxXAxisValue = xAxisValue.last.toDouble();
+    }
+
     return flSpotList;
   }
 
@@ -857,10 +952,16 @@ class _DynamicListViewScreenState extends State<statusPage> {
   //   }
   // }
 
-  String convertDateFromString(String strDate) {
+  String convertTimeFromString(String strDate) {
     DateTime todayDate =
         new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
     return formatDate(todayDate, [HH, ':', nn]);
+  }
+
+  String convertDateFromString(String strDate) {
+    DateTime todayDate =
+    new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    return formatDate(todayDate, [M,', ' ,dd]);
   }
 
   fetchStatusLogList(String chargerId) async {
@@ -950,9 +1051,14 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                     });
                                     ProgressDialogs.showLoadingDialog(
                                         context, _keyLoader);
-                                    for (var i = 0; i < _stationGroup.length;i++) {
-                                      if (_stationGroup[i].name.endsWith(newValue)) {
-                                        fetchStatusLogList(_stationGroup[i].sId);
+                                    for (var i = 0;
+                                        i < _stationGroup.length;
+                                        i++) {
+                                      if (_stationGroup[i]
+                                          .name
+                                          .endsWith(newValue)) {
+                                        fetchStatusLogList(
+                                            _stationGroup[i].sId);
                                       }
                                     }
                                   },

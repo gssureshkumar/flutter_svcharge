@@ -10,7 +10,9 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiBaseHelper {
-  final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
+  // final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
+  final String _baseUrl = "https://tgserver.scnordic.com/api/app/";
+
 
   Future<dynamic> get(String url) async {
     print('Api Get, url $url');
@@ -53,6 +55,7 @@ class ApiBaseHelper {
   }
 
   Future<dynamic> post(String url, dynamic body) async {
+    print('Api Post, url $_baseUrl');
     print('Api Post, url ' + json.encode(body));
     var responseJson;
     try {
