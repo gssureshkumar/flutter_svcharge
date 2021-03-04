@@ -37,7 +37,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   double maxChargerValue;
 
   double minXAxisValue;
-  double maxXAxisValue ;
+  double maxXAxisValue;
+
   int xAxisPos;
 
   List<Color> gradientColors = [
@@ -100,7 +101,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             print(dateTime);
             return dateTime;
           },
-          interval: (calculateNumber(((25 / 100) * (maxXAxisValue-minXAxisValue)).round())).toDouble(),
+          interval: xAxisInterval((calculateNumber(
+                  ((25 / 100) * (maxXAxisValue - minXAxisValue)).round())))
+              .toDouble(),
           margin: 8,
         ),
         leftTitles: SideTitles(
@@ -112,7 +115,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           getTitles: (value) {
             return value.round().toString();
           },
-          interval: calculateNumber(((15 / 100) * maxChargerValue).round()).toDouble(),
+          interval: calculateNumber(((15 / 100) * maxChargerValue).round())
+              .toDouble(),
           reservedSize: 28,
           margin: 12,
         ),
@@ -167,7 +171,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   }
 
   List<LineTooltipItem> defaultLineTooltipItem(List<LineBarSpot> touchedSpots) {
-    xAxisPos =0;
+    xAxisPos = 0;
     if (touchedSpots == null) {
       return null;
     }
@@ -204,6 +208,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     return number;
   }
 
+  int xAxisInterval(int number) {
+    return number > 0 ? number : 2;
+  }
 
   void _modalBottomSheetMenu(ChargerData chargerData) {
     print(pickerValue);
@@ -498,7 +505,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         ),
                         new Column(children: <Widget>[
                           Container(
-                              padding: EdgeInsets.fromLTRB(10,10,10,0),
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                               alignment: Alignment.center,
                               child: new Text(
                                   convertTimeFromString(
@@ -537,14 +544,14 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
 
   String convertTimeFromString(String strDate) {
     DateTime todayDate =
-    new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+        new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
     return formatDate(todayDate, [HH, ':', nn]);
   }
 
   String convertDateFromString(String strDate) {
     DateTime todayDate =
-    new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
-    return formatDate(todayDate, [M,', ' ,dd]);
+        new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    return formatDate(todayDate, [M, ', ', dd]);
   }
 
 // A Separate Function called from itemBuilder
@@ -831,9 +838,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     }
   }
 
-
-
-
   List<FlSpot> getLineChartData() {
     maxChargerValue = 10;
     minXAxisValue = 0;
@@ -842,7 +846,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     List<FlSpot> flSpotList = new List<FlSpot>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
-        for (var i = 0; i < graphResponseData.data.consumptionData.power[0].data.length;i++) {
+        for (var i = 0;
+            i < graphResponseData.data.consumptionData.power[0].data.length;
+            i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
           double yAxis = double.parse(
@@ -870,7 +876,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.soc[0].data[i].y);
           Duration duration =
-          Duration(milliseconds: todayDate.millisecondsSinceEpoch);
+              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
 
           flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
 
@@ -885,13 +891,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     } else if (pickerValue.toLowerCase().endsWith("consumption")) {
       if (graphResponseData.data.consumptionData.consumption[0].data.length >
           0) {
-        for (var i = 0;  i < graphResponseData.data.consumptionData.consumption[0].data.length;i++) {
-          DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
-              .parse(graphResponseData.data.consumptionData.consumption[0].data[i].x);
+        for (var i = 0;
+            i <
+                graphResponseData
+                    .data.consumptionData.consumption[0].data.length;
+            i++) {
+          DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(
+              graphResponseData.data.consumptionData.consumption[0].data[i].x);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].y);
           Duration duration =
-          Duration(milliseconds: todayDate.millisecondsSinceEpoch);
+              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
 
           flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
 

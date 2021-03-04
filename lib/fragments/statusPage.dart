@@ -115,8 +115,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
           getTitles: (value) {
             return value.round().toString();
           },
-          interval: calculateNumber(((15 / 100) * maxChargerValue).round())
-              .toDouble(),
+          interval: xAxisInterval(calculateNumber(((15 / 100) * maxChargerValue).round())).toDouble(),
           reservedSize: 28,
           margin: 12,
         ),
@@ -193,6 +192,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
     }).toList();
   }
 
+  int xAxisInterval(int number) {
+    return number > 0 ? number : 2;
+  }
   int calculateNumber(int number) {
     if (maxChargerValue > 500) {
       int a = number % 100;
