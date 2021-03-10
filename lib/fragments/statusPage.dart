@@ -542,7 +542,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         fallbackBuilder: (BuildContext context) => Container(
                               padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
                               alignment: Alignment.center,
-                              child: Text('No Logs found!!!'),
+                              child: Text('No Chargers/Logs found!'),
                             )),
                   ],
                 ),
@@ -962,7 +962,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
 
   String convertDateFromString(String strDate) {
     DateTime todayDate =
-    new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
     return formatDate(todayDate, [M,', ' ,dd]);
   }
 
@@ -1107,10 +1107,24 @@ class _DynamicListViewScreenState extends State<statusPage> {
                           ],
                         )),
                     Expanded(
-                      child: new ListView.builder(
-                          itemCount: statusLogsList.length,
-                          itemBuilder: (BuildContext ctxt, int index) =>
-                              buildBody(ctxt, index)),
+                      child: Conditional.single(
+                          context: context,
+                          conditionBuilder: (BuildContext context) =>
+                          statusLogsList.length > 0,
+                          widgetBuilder: (BuildContext context) => Container(
+                            height: MediaQuery.of(context).size.height * 0.65,
+                            padding: EdgeInsets.all(15.0),
+                            child:  new ListView.builder(
+                                itemCount: statusLogsList.length,
+                                itemBuilder: (BuildContext ctxt, int index) =>
+                                    buildBody(ctxt, index)),
+                          ),
+                          fallbackBuilder: (BuildContext context) => Container(
+                            padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                            alignment: Alignment.center,
+                            child: Text('No Chargers/Logs found!'),
+                          )),
+
                     ),
                   ])),
         ));
