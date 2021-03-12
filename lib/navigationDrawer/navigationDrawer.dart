@@ -22,7 +22,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class navigationDrawer extends StatelessWidget {
   bool isNavSelected;
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -37,10 +36,19 @@ class navigationDrawer extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       children: <Widget>[
                         Container(
-                            padding: EdgeInsets.fromLTRB(20, 60, 20, 40),
+                            padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
                             child: SvgPicture.asset('assets/logo_nav_icon.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
+                        Container(
+                          alignment:Alignment.centerRight,
+                          padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
+                          child: Text('V: 1.0.3',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                  fontSize: 10)),
+                        ),
                         createDrawerBodyCornerItem(
                             icon: 'assets/charger_fleet.png',
                             text: 'Charge Fleet Management'),

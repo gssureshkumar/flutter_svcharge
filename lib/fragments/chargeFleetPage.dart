@@ -669,7 +669,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             },
             child: new Column(children: <Widget>[
               Expanded(
-                  child: Align(
+                  child: Container(
+                    height: 150,
                       alignment: FractionalOffset.center,
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -687,21 +688,21 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                           alignment: Alignment.center,
                                           child: SvgPicture.asset(
                                               'assets/warning_icon.svg',
-                                              height: 100,
-                                              width: 100)),
+                                              height: 80,
+                                              width: 80)),
                                   'not connected': (BuildContext context) =>
                                       Container(
                                           alignment: Alignment.center,
                                           child: SvgPicture.asset(
                                               'assets/not_connected_icon.svg',
-                                              height: 100,
-                                              width: 100)),
+                                              height: 80,
+                                              width: 80)),
                                   'online': (BuildContext context) => Container(
                                       alignment: Alignment.center,
                                       child: SvgPicture.asset(
                                           'assets/tick_icon.svg',
-                                          height: 100,
-                                          width: 100)),
+                                          height: 80,
+                                          width: 80)),
                                 },
                                 fallbackBuilder: (BuildContext context) =>
                                     Container(
@@ -745,14 +746,16 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       StationDataList response =
           await new ChargerRepository().fetchStationList();
       print(response);
-      setState(() {
-        if (response.success && response.data.groups.length > 0) {
-          _stationGroup = response.data.groups;
-          dropdownValue = response.data.groups[0].name;
-          chargerValue = response.data.groups[0].sId;
-          fetchChargerList(response.data.groups[0].sId);
-        }
-      });
+      if (response.success && response.data.groups.length > 0) {
+        setState(() {
+          if (response.success && response.data.groups.length > 0) {
+            _stationGroup = response.data.groups;
+            dropdownValue = response.data.groups[0].name;
+            chargerValue = response.data.groups[0].sId;
+            fetchChargerList(response.data.groups[0].sId);
+          }
+        });
+      }
     } catch (e) {
       print(e);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
@@ -987,93 +990,100 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                           color: Color(0xff000000),
                                           fontSize: 15),
                                     ))),
-                            Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.black12,
-                                    ),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15))),
-                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                alignment: Alignment.center,
-                                child: DropdownButton<String>(
-                                  value: dropdownValue,
-                                  icon: Icon(Icons.arrow_drop_down),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xff000000),
-                                      fontSize: 13),
-                                  underline: Container(
-                                    height: 0,
-                                    color: Colors.deepPurpleAccent,
-                                  ),
-                                  onChanged: (String newValue) {
-                                    setState(() {
-                                      dropdownValue = newValue;
-                                    });
-                                    ProgressDialogs.showLoadingDialog(
-                                        context, _keyLoader);
-                                    for (var i = 0;
-                                        i < _stationGroup.length;
-                                        i++) {
-                                      if (_stationGroup[i]
-                                          .name
-                                          .endsWith(newValue)) {
-                                        chargerValue = _stationGroup[i].sId;
-                                        fetchChargerList(_stationGroup[i].sId);
-                                      }
-                                    }
-                                  },
-                                  items: _stationGroup
-                                      .map<DropdownMenuItem<String>>(
-                                          (Groups value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value.name,
-                                      child: Row(
-                                        children: <Widget>[
-                                          SvgPicture.asset(
-                                              'assets/station_icon.svg',
-                                              color: Color(0xff14AE39),
-                                              width: 20,
-                                              height: 20),
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 8.0),
-                                            child: Text(value.name,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                    fontSize: 13)),
-                                          )
-                                        ],
+                            if (_stationGroup.length > 1)
+                              Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.black12,
                                       ),
-                                    );
-                                  }).toList(),
-                                )),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(15))),
+                                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                  alignment: Alignment.center,
+                                  child: DropdownButton<String>(
+                                    value: dropdownValue,
+                                    icon: Icon(Icons.arrow_drop_down),
+                                    iconSize: 24,
+                                    elevation: 16,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff000000),
+                                        fontSize: 13),
+                                    underline: Container(
+                                      height: 0,
+                                      color: Colors.deepPurpleAccent,
+                                    ),
+                                    onChanged: (String newValue) {
+                                      setState(() {
+                                        dropdownValue = newValue;
+                                      });
+                                      ProgressDialogs.showLoadingDialog(
+                                          context, _keyLoader);
+                                      for (var i = 0;
+                                          i < _stationGroup.length;
+                                          i++) {
+                                        if (_stationGroup[i]
+                                            .name
+                                            .endsWith(newValue)) {
+                                          chargerValue = _stationGroup[i].sId;
+                                          fetchChargerList(
+                                              _stationGroup[i].sId);
+                                        }
+                                      }
+                                    },
+                                    items: _stationGroup
+                                        .map<DropdownMenuItem<String>>(
+                                            (Groups value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value.name,
+                                        child: Row(
+                                          children: <Widget>[
+                                            SvgPicture.asset(
+                                                'assets/station_icon.svg',
+                                                color: Color(0xff14AE39),
+                                                width: 20,
+                                                height: 20),
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 8.0),
+                                              child: Text(value.name,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color: Colors.black,
+                                                      fontSize: 13)),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                    // ignore: missing_return
+                                  )),
                           ],
                         )),
                     Expanded(
                       child: Conditional.single(
                           context: context,
                           conditionBuilder: (BuildContext context) =>
-                          chargerDataList.length > 0,
+                              chargerDataList.length > 0,
                           widgetBuilder: (BuildContext context) => Container(
-                            height: MediaQuery.of(context).size.height * 0.65,
-                            padding: EdgeInsets.all(15.0),
-                            child:  new GridView.builder(
-                                gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2),
-                                itemCount: chargerDataList.length,
-                                itemBuilder: (BuildContext ctxt, int index) =>
-                                    buildBody(ctxt, index)),
-                          ),
+                                height:
+                                    MediaQuery.of(context).size.height * 0.65,
+                                padding: EdgeInsets.all(15.0),
+                                child: new GridView.builder(
+                                    gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 2),
+                                    itemCount: chargerDataList.length,
+                                    itemBuilder:
+                                        (BuildContext ctxt, int index) =>
+                                            buildBody(ctxt, index)),
+                              ),
                           fallbackBuilder: (BuildContext context) => Container(
-                            padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
-                            alignment: Alignment.center,
-                            child: Text('No Chargers/Logs found!'),
-                          )),
+                                padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                                alignment: Alignment.center,
+                                child: Text('No Chargers/Logs found!'),
+                              )),
                     ),
                   ])),
         ));

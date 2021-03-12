@@ -115,7 +115,9 @@ class _DynamicListViewScreenState extends State<statusPage> {
           getTitles: (value) {
             return value.round().toString();
           },
-          interval: xAxisInterval(calculateNumber(((15 / 100) * maxChargerValue).round())).toDouble(),
+          interval: xAxisInterval(
+                  calculateNumber(((15 / 100) * maxChargerValue).round()))
+              .toDouble(),
           reservedSize: 28,
           margin: 12,
         ),
@@ -195,6 +197,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
   int xAxisInterval(int number) {
     return number > 0 ? number : 2;
   }
+
   int calculateNumber(int number) {
     if (maxChargerValue > 500) {
       int a = number % 100;
@@ -607,7 +610,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         ),
                         new Column(children: <Widget>[
                           Container(
-                              padding: EdgeInsets.fromLTRB(10,10,10,0),
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                               alignment: Alignment.center,
                               child: new Text(
                                   convertTimeFromString(
@@ -701,7 +704,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                         ),
                         new Column(children: <Widget>[
                           Container(
-                              padding: EdgeInsets.fromLTRB(10,10,10,0),
+                              padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                               alignment: Alignment.center,
                               child: new Text(
                                   convertTimeFromString(
@@ -962,8 +965,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
 
   String convertDateFromString(String strDate) {
     DateTime todayDate =
-    new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
-    return formatDate(todayDate, [M,', ' ,dd]);
+        new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
+    return formatDate(todayDate, [M, ', ', dd]);
   }
 
   fetchStatusLogList(String chargerId) async {
@@ -1024,71 +1027,74 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                           color: Color(0xff000000),
                                           fontSize: 15),
                                     ))),
-                            Container(
-                                decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Colors.black12,
-                                    ),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(15))),
-                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
-                                alignment: Alignment.center,
-                                child: DropdownButton<String>(
-                                  value: dropdownValue,
-                                  icon: Icon(Icons.arrow_drop_down),
-                                  iconSize: 24,
-                                  elevation: 16,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.w400,
-                                      color: Color(0xff000000),
-                                      fontSize: 13),
-                                  underline: Container(
-                                    height: 0,
-                                    color: Colors.deepPurpleAccent,
-                                  ),
-                                  onChanged: (String newValue) {
-                                    setState(() {
-                                      dropdownValue = newValue;
-                                      print(dropdownValue);
-                                    });
-                                    ProgressDialogs.showLoadingDialog(
-                                        context, _keyLoader);
-                                    for (var i = 0;
-                                        i < _stationGroup.length;
-                                        i++) {
-                                      if (_stationGroup[i]
-                                          .name
-                                          .endsWith(newValue)) {
-                                        fetchStatusLogList(
-                                            _stationGroup[i].sId);
-                                      }
-                                    }
-                                  },
-                                  items: _stationGroup
-                                      .map<DropdownMenuItem<String>>(
-                                          (Groups value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value.name,
-                                      child: Row(
-                                        children: <Widget>[
-                                          SvgPicture.asset(
-                                              'assets/station_icon.svg',
-                                              color: Color(0xff14AE39),
-                                              width: 20,
-                                              height: 20),
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 8.0),
-                                            child: Text(value.name,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                    fontSize: 13)),
-                                          )
-                                        ],
+                            if (_stationGroup.length > 1)
+                              Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: Colors.black12,
                                       ),
-                                    );
-                                  }).toList(),
-                                )),
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(15))),
+                                  padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                  alignment: Alignment.center,
+                                  child: DropdownButton<String>(
+                                    value: dropdownValue,
+                                    icon: Icon(Icons.arrow_drop_down),
+                                    iconSize: 24,
+                                    elevation: 16,
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xff000000),
+                                        fontSize: 13),
+                                    underline: Container(
+                                      height: 0,
+                                      color: Colors.deepPurpleAccent,
+                                    ),
+                                    onChanged: (String newValue) {
+                                      setState(() {
+                                        dropdownValue = newValue;
+                                        print(dropdownValue);
+                                      });
+                                      ProgressDialogs.showLoadingDialog(
+                                          context, _keyLoader);
+                                      for (var i = 0;
+                                          i < _stationGroup.length;
+                                          i++) {
+                                        if (_stationGroup[i]
+                                            .name
+                                            .endsWith(newValue)) {
+                                          fetchStatusLogList(
+                                              _stationGroup[i].sId);
+                                        }
+                                      }
+                                    },
+                                    items: _stationGroup
+                                        .map<DropdownMenuItem<String>>(
+                                            (Groups value) {
+                                      return DropdownMenuItem<String>(
+                                        value: value.name,
+                                        child: Row(
+                                          children: <Widget>[
+                                            SvgPicture.asset(
+                                                'assets/station_icon.svg',
+                                                color: Color(0xff14AE39),
+                                                width: 20,
+                                                height: 20),
+                                            Padding(
+                                              padding:
+                                                  EdgeInsets.only(left: 8.0),
+                                              child: Text(value.name,
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                      color: Colors.black,
+                                                      fontSize: 13)),
+                                            )
+                                          ],
+                                        ),
+                                      );
+                                    }).toList(),
+                                  )),
                           ],
                         )),
                     Container(
@@ -1110,21 +1116,22 @@ class _DynamicListViewScreenState extends State<statusPage> {
                       child: Conditional.single(
                           context: context,
                           conditionBuilder: (BuildContext context) =>
-                          statusLogsList.length > 0,
+                              statusLogsList.length > 0,
                           widgetBuilder: (BuildContext context) => Container(
-                            height: MediaQuery.of(context).size.height * 0.65,
-                            padding: EdgeInsets.all(15.0),
-                            child:  new ListView.builder(
-                                itemCount: statusLogsList.length,
-                                itemBuilder: (BuildContext ctxt, int index) =>
-                                    buildBody(ctxt, index)),
-                          ),
+                                height:
+                                    MediaQuery.of(context).size.height * 0.65,
+                                padding: EdgeInsets.all(15.0),
+                                child: new ListView.builder(
+                                    itemCount: statusLogsList.length,
+                                    itemBuilder:
+                                        (BuildContext ctxt, int index) =>
+                                            buildBody(ctxt, index)),
+                              ),
                           fallbackBuilder: (BuildContext context) => Container(
-                            padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
-                            alignment: Alignment.center,
-                            child: Text('No Chargers/Logs found!'),
-                          )),
-
+                                padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                                alignment: Alignment.center,
+                                child: Text('No Chargers/Logs found!'),
+                              )),
                     ),
                   ])),
         ));
