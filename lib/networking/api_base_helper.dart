@@ -21,7 +21,7 @@ class ApiBaseHelper {
       String token = await _getToken();
       final response = await http.get(_baseUrl + url, headers: {
         HttpHeaders.authorizationHeader: token
-      }).timeout(const Duration(seconds: 30), onTimeout: () {
+      }).timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');
 
@@ -42,7 +42,7 @@ class ApiBaseHelper {
       String token = await _getToken();
       final response = await http.get(_baseUrl + url, headers: {
         HttpHeaders.authorizationHeader: token
-      }).timeout(const Duration(seconds: 30), onTimeout: () {
+      }).timeout(const Duration(seconds: 120), onTimeout: () {
         throw FetchDataException('');
 
       });
@@ -63,7 +63,7 @@ class ApiBaseHelper {
           body: json.encode(body),
           headers: {
             "Content-Type": "application/json"
-          }).timeout(const Duration(seconds: 30), onTimeout: () {
+          }).timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');
       });
@@ -83,7 +83,7 @@ class ApiBaseHelper {
       String token = await _getToken();
       final response = await http.post(_baseUrl + url, headers: {
         HttpHeaders.authorizationHeader: token
-      }).timeout(const Duration(seconds: 30), onTimeout: () {
+      }).timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');
       });
@@ -102,7 +102,7 @@ class ApiBaseHelper {
     try {
       final response = await http
           .put(_baseUrl + url, body: body)
-          .timeout(const Duration(seconds: 30), onTimeout: () {
+          .timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');
       });
@@ -122,7 +122,7 @@ class ApiBaseHelper {
     try {
       final response = await http
           .delete(_baseUrl + url)
-          .timeout(const Duration(seconds: 30), onTimeout: () {
+          .timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');
       });

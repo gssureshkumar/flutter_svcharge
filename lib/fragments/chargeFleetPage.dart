@@ -15,10 +15,11 @@ import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import "dart:math";
+import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:sc_charge/models/bar_chart_model.dart';
 
 class chargeFleetPage extends StatefulWidget {
   static const String routeName = '/chargeFleetPage';
@@ -31,20 +32,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
   List<ChargerData> chargerDataList = new List<ChargerData>();
   List<LogsData> statusList = new List<LogsData>();
+  List<charts.Series<BarChartModel, DateTime>> seriesList;
   Timer timer;
   ChargerData chargerData;
   GraphResponseData graphResponseData;
-  double maxChargerValue;
-
-  double minXAxisValue;
-  double maxXAxisValue;
-
-  int xAxisPos;
-
-  List<Color> gradientColors = [
-    const Color(0xff23b6e6),
-    const Color(0xff02d39a),
-  ];
   String pickerValue = 'Power';
   DateTime selectedDate = DateTime.now();
 
@@ -63,98 +54,57 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
       });
   }
 
-  LineChartData avgData() {
-    xAxisPos = 0;
-    List<FlSpot> flSpotList = getLineChartData();
-    return LineChartData(
-      lineTouchData: LineTouchData(
-          enabled: true,
-          touchTooltipData: LineTouchTooltipData(
-              tooltipBgColor: Colors.white,
-              getTooltipItems: defaultLineTooltipItem)),
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: SideTitles(
-          showTitles: true,
-          getTextStyles: (value) => const TextStyle(
-              fontWeight: FontWeight.w400,
-              color: Color(0xff67727d),
-              fontSize: 12),
-          getTitles: (value) {
-            String dateTime = minutesToDateOfDay(value.round());
-            print(dateTime);
-            return dateTime;
-          },
-          interval: xAxisInterval((calculateNumber(
-                  ((25 / 100) * (maxXAxisValue - minXAxisValue)).round())))
-              .toDouble(),
-          margin: 8,
-        ),
-        leftTitles: SideTitles(
-          showTitles: true,
-          getTextStyles: (value) => const TextStyle(
-              fontWeight: FontWeight.w400,
-              color: Color(0xff67727d),
-              fontSize: 10),
-          getTitles: (value) {
-            return value.round().toString();
-          },
-          interval: calculateNumber(((15 / 100) * maxChargerValue).round())
-              .toDouble(),
-          reservedSize: 28,
-          margin: 12,
-        ),
-      ),
-      borderData: FlBorderData(
-          show: true,
-          border: Border.all(color: const Color(0xff37434d), width: 1)),
-      minX: minXAxisValue,
-      maxX: maxXAxisValue,
-      minY: 0,
-      maxY: maxChargerValue,
-      lineBarsData: [
-        LineChartBarData(
-          spots: flSpotList,
-          isCurved: true,
-          colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2),
-          ],
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(show: true, colors: [
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)
-                .withOpacity(0.1),
-            ColorTween(begin: gradientColors[0], end: gradientColors[1])
-                .lerp(0.2)
-                .withOpacity(0.1),
-          ]),
-        ),
-      ],
-    );
-  }
+  // BarChartData avgData() {
+  //   xAxisPos = 0;
+  //   List<BarChartGroupData> flSpotList = getLineChartData();
+  //   return BarChartData(
+  //     alignment: BarChartAlignment.center,
+  //     barTouchData: BarTouchData(
+  //       enabled: false,
+  //     ),
+  //     titlesData: FlTitlesData(
+  //       show: true,
+  //       bottomTitles: SideTitles(
+  //         showTitles: true,
+  //         getTextStyles: (value) =>
+  //             const TextStyle(color: Color(0xff939393), fontSize: 10),
+  //         margin: 10,
+  //         getTitles: (value) {
+  //           String dateTime = minutesToDateOfDay(value.round());
+  //           print(dateTime);
+  //           return dateTime;
+  //         },
+  //         interval: xAxisInterval((calculateNumber(
+  //                 ((25 / 100) * (maxXAxisValue - minXAxisValue)).round())))
+  //             .toDouble(),
+  //       ),
+  //       leftTitles: SideTitles(
+  //         showTitles: true,
+  //         getTextStyles: (value) => const TextStyle(
+  //             color: Color(
+  //               0xff939393,
+  //             ),
+  //             fontSize: 10),
+  //         margin: 0,
+  //       ),
+  //     ),
+  //     minY: 0,
+  //     maxY: maxChargerValue,
+  //     gridData: FlGridData(
+  //       show: true,
+  //       checkToShowHorizontalLine: (value) => value % 10 == 0,
+  //       getDrawingHorizontalLine: (value) => FlLine(
+  //         color: const Color(0xffe7e8ec),
+  //         strokeWidth: 1,
+  //       ),
+  //     ),
+  //     borderData: FlBorderData(
+  //       show: false,
+  //     ),
+  //     groupsSpace: 1,
+  //     barGroups: flSpotList,
+  //   );
+  // }
 
   String minutesToTimeOfDay(int minutes) {
     Duration duration = Duration(minutes: minutes);
@@ -168,48 +118,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     var date = DateTime.fromMillisecondsSinceEpoch(duration.inMilliseconds);
     var formattedDate = DateFormat.Hm().format(date);
     return formattedDate;
-  }
-
-  List<LineTooltipItem> defaultLineTooltipItem(List<LineBarSpot> touchedSpots) {
-    xAxisPos = 0;
-    if (touchedSpots == null) {
-      return null;
-    }
-
-    return touchedSpots.map((LineBarSpot touchedSpot) {
-      if (touchedSpot == null) {
-        return null;
-      }
-      final TextStyle textStyle = TextStyle(
-        color: touchedSpot.bar.colors[0],
-        fontWeight: FontWeight.bold,
-        fontSize: 14,
-      );
-      return LineTooltipItem(
-          (minutesToTimeOfDay(touchedSpot.x.toInt()) +
-              " : " +
-              touchedSpot.y.toString()),
-          textStyle);
-    }).toList();
-  }
-
-  int calculateNumber(int number) {
-    if (maxChargerValue > 500) {
-      int a = number % 100;
-      if (a > 0) {
-        return (number ~/ 100) * 100 + 100;
-      }
-    } else {
-      int a = number % 10;
-      if (a > 0) {
-        return (number ~/ 10) * 10 + 10;
-      }
-    }
-    return number;
-  }
-
-  int xAxisInterval(int number) {
-    return number > 0 ? number : 2;
   }
 
   void _modalBottomSheetMenu(ChargerData chargerData) {
@@ -407,8 +315,21 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                     left: 12.0,
                                     top: 24,
                                     bottom: 12),
-                                child: LineChart(
-                                  avgData(),
+                                child: charts.TimeSeriesChart(
+                                  getLineChartData (),
+                                  animate: true,
+                                  defaultRenderer:
+                                      new charts.BarRendererConfig<DateTime>(),
+                                  defaultInteractions: false,
+                                  selectionModels: [
+                                    new charts.SelectionModelConfig(
+                                      type: charts.SelectionModelType.info,
+                                    )
+                                  ],
+                                  behaviors: [
+                                    new charts.SelectNearest(),
+                                    new charts.DomainHighlighter()
+                                  ],
                                 ),
                               ),
                             ),
@@ -440,7 +361,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         fallbackBuilder: (BuildContext context) => Container(
                               padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
                               alignment: Alignment.center,
-                              child: Text('No Chargers/Logs found!'),
+                              child: Text('No Chargers found!'),
                             )),
                   ],
                 ),
@@ -670,7 +591,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             child: new Column(children: <Widget>[
               Expanded(
                   child: Container(
-                    height: 150,
+                      height: 150,
                       alignment: FractionalOffset.center,
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
@@ -841,12 +762,10 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     }
   }
 
-  List<FlSpot> getLineChartData() {
-    maxChargerValue = 10;
-    minXAxisValue = 0;
-    maxXAxisValue = 0;
-    List<int> xAxisValue = [];
-    List<FlSpot> flSpotList = new List<FlSpot>();
+
+
+List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
+    List<BarChartModel> flSpotList = new List<BarChartModel>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
         for (var i = 0;
@@ -854,20 +773,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
-          double yAxis = double.parse(
-              graphResponseData.data.consumptionData.power[0].data[i].y);
-          Duration duration =
-              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
-
-          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
-
-          if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis;
-          }
-          xAxisValue.add(duration.inMinutes);
+          double yAxis = double.parse( graphResponseData.data.consumptionData.power[0].data[i].y);
+          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
         }
       } else {
-        flSpotList.add(FlSpot(0.0, 0.0));
+        flSpotList.add(BarChartModel(DateTime.now(), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("soc")) {
       if (graphResponseData.data.consumptionData.soc[0].data.length > 0) {
@@ -876,20 +786,11 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
-          double yAxis = double.parse(
-              graphResponseData.data.consumptionData.soc[0].data[i].y);
-          Duration duration =
-              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
-
-          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
-
-          if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis;
-          }
-          xAxisValue.add(duration.inMinutes);
+          double yAxis = double.parse( graphResponseData.data.consumptionData.soc[0].data[i].y);
+          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
         }
       } else {
-        flSpotList.add(FlSpot(0.0, 0.0));
+        flSpotList.add(BarChartModel(DateTime.now(), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("consumption")) {
       if (graphResponseData.data.consumptionData.consumption[0].data.length >
@@ -903,30 +804,24 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].y);
-          Duration duration =
-              Duration(milliseconds: todayDate.millisecondsSinceEpoch);
-
-          flSpotList.add(FlSpot(duration.inMinutes.toDouble(), yAxis));
-
-          if (maxChargerValue < yAxis) {
-            maxChargerValue = yAxis;
-          }
-          xAxisValue.add(duration.inMinutes);
+          flSpotList.add(BarChartModel(todayDate, yAxis.round()));
         }
       } else {
-        flSpotList.add(FlSpot(0.0, 0.0));
+        flSpotList.add(BarChartModel(DateTime.now(), 0));
       }
     } else {
-      flSpotList.add(FlSpot(0.0, 0.0));
+      flSpotList.add(BarChartModel(DateTime.now(), 0));
     }
 
-    if (xAxisValue.isNotEmpty) {
-      xAxisValue.sort();
-      minXAxisValue = xAxisValue.first.toDouble();
-      maxXAxisValue = xAxisValue.last.toDouble();
-    }
-
-    return flSpotList;
+    return [
+      new charts.Series<BarChartModel, DateTime>(
+        id: 'Sales',
+        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        domainFn: (BarChartModel sales, _) => sales.dateTime,
+        measureFn: (BarChartModel sales, _) => sales.charger,
+        data: flSpotList,
+      )
+    ];
   }
 
   String getXTitle() {
@@ -1082,7 +977,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                           fallbackBuilder: (BuildContext context) => Container(
                                 padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
                                 alignment: Alignment.center,
-                                child: Text('No Chargers/Logs found!'),
+                                child: Text('No Chargers found!'),
                               )),
                     ),
                   ])),

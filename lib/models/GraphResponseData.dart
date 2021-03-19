@@ -234,7 +234,7 @@ class LogsData {
   String action;
   String timeStamp;
   String duration;
-  int consumption;
+  double consumption;
 
   LogsData(
       {this.chargerId,

@@ -43,7 +43,7 @@ class navigationDrawer extends StatelessWidget {
                         Container(
                           alignment:Alignment.centerRight,
                           padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
-                          child: Text('V: 1.0.3',
+                          child: Text('V: 1.0.5',
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white,
