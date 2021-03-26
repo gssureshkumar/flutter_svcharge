@@ -267,7 +267,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       color: Colors.black12,
                                     ),
                                     borderRadius:
-                                        BorderRadius.all(Radius.circular(15))),
+                                    BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: DropdownButton<String>(
@@ -295,29 +295,29 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                     'Consumption',
                                     'SoC',
                                   ].map<DropdownMenuItem<String>>(
-                                      (String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Row(
-                                        children: <Widget>[
-                                          Padding(
-                                            padding: EdgeInsets.only(left: 8.0),
-                                            child: Text(value,
-                                                style: TextStyle(
-                                                    fontWeight: FontWeight.w400,
-                                                    color: Colors.black,
-                                                    fontSize: 13)),
-                                          )
-                                        ],
-                                      ),
-                                    );
-                                  }).toList(),
+                                          (String value) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Row(
+                                            children: <Widget>[
+                                              Padding(
+                                                padding: EdgeInsets.only(left: 8.0),
+                                                child: Text(value,
+                                                    style: TextStyle(
+                                                        fontWeight: FontWeight.w400,
+                                                        color: Colors.black,
+                                                        fontSize: 13)),
+                                              )
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
                                 )),
                             Container(
                                 decoration: BoxDecoration(
                                     color: Color(0xffF4F7FC),
                                     borderRadius:
-                                        BorderRadius.all(Radius.circular(15))),
+                                    BorderRadius.all(Radius.circular(15))),
                                 padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
                                 alignment: Alignment.center,
                                 child: new GestureDetector(
@@ -347,7 +347,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
                     Conditional.single(
                       context: context,
                       conditionBuilder: (BuildContext context) =>
-                          getLineChartData().length > 0,
+                      getLineChartData().length > 0,
                       widgetBuilder: (BuildContext context) => Container(
                         padding: EdgeInsets.all(10.0),
                         child: Stack(
@@ -366,22 +366,42 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       left: 12.0,
                                       top: 24,
                                       bottom: 12),
-                                  child: charts.TimeSeriesChart(
-                                    getLineChartData (),
-                                    animate: true,
-                                    defaultRenderer:
-                                    new charts.BarRendererConfig<DateTime>(),
-                                    defaultInteractions: false,
-                                    selectionModels: [
-                                      new charts.SelectionModelConfig(
-                                        type: charts.SelectionModelType.info,
-                                      )
-                                    ],
-                                    behaviors: [
-                                      new charts.SelectNearest(),
-                                      new charts.DomainHighlighter()
-                                    ],
-                                  ),
+                                  child:  charts.BarChart(getLineChartData(),
+                                      animate: true,
+                                      primaryMeasureAxis:
+                                      new charts.NumericAxisSpec(
+                                          renderSpec:
+                                          new charts.GridlineRendererSpec(
+                                            labelStyle: new charts.TextStyleSpec(
+                                                fontSize: 14, // size in Pts.
+                                                color: charts.MaterialPalette.white),
+                                            // Change the line colors to match text color.
+                                            lineStyle: new charts.LineStyleSpec(
+                                                color: charts.MaterialPalette.gray.shade800),
+                                          )),
+                                      domainAxis: new charts.OrdinalAxisSpec(
+                                        renderSpec:
+                                        new charts.SmallTickRendererSpec(
+                                          labelStyle: new charts.TextStyleSpec(
+                                              fontSize: 14, // size in Pts.
+                                              color:
+                                              charts.MaterialPalette.white),
+                                          lineStyle: new charts.LineStyleSpec(
+                                              color:
+                                              charts.MaterialPalette.gray.shade800),
+                                        ),
+                                        tickProviderSpec:
+                                        charts.StaticOrdinalTickProviderSpec(<
+                                            charts.TickSpec<String>>[
+                                          charts.TickSpec<String>("10:00"),
+                                          charts.TickSpec<String>("20:00"),
+                                        ]),
+                                      ),
+                                      behaviors: [
+                                        new charts.SeriesLegend(),
+                                        // new charts.SlidingViewport(),
+                                        new charts.PanAndZoomBehavior(),
+                                      ]),
                                 ),
                               ),
                             ),
@@ -403,20 +423,20 @@ class _DynamicListViewScreenState extends State<statusPage> {
                     Conditional.single(
                         context: context,
                         conditionBuilder: (BuildContext context) =>
-                            statusList.length > 0,
+                        statusList.length > 0,
                         widgetBuilder: (BuildContext context) => Container(
-                              height: MediaQuery.of(context).size.height * 0.65,
-                              padding: EdgeInsets.all(15.0),
-                              child: new ListView.builder(
-                                  itemCount: statusList.length,
-                                  itemBuilder: (BuildContext ctxt, int index) =>
-                                      buildStatusBody(ctxt, index)),
-                            ),
+                          height: MediaQuery.of(context).size.height * 0.65,
+                          padding: EdgeInsets.all(15.0),
+                          child: new ListView.builder(
+                              itemCount: statusList.length,
+                              itemBuilder: (BuildContext ctxt, int index) =>
+                                  buildStatusBody(ctxt, index)),
+                        ),
                         fallbackBuilder: (BuildContext context) => Container(
-                              padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
-                              alignment: Alignment.center,
-                              child: Text('No Logs found!'),
-                            )),
+                          padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                          alignment: Alignment.center,
+                          child: Text('No Logs found!'),
+                        )),
                   ],
                 ),
               ],
@@ -618,14 +638,14 @@ class _DynamicListViewScreenState extends State<statusPage> {
                             padding: EdgeInsets.all(10.0),
                             alignment: Alignment.center,
                             child:
-                                new Text(' - ' + statusLogsList[index].action,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.poppins(
-                                      textStyle: TextStyle(
-                                          fontWeight: FontWeight.w400,
-                                          color: Color(0xff818E94),
-                                          fontSize: 12),
-                                    )))
+                            new Text(' - ' + statusLogsList[index].action,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  textStyle: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff818E94),
+                                      fontSize: 12),
+                                )))
                       ])))
             ])));
   }
@@ -648,7 +668,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     try {
       ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
       SuccessResponseData response =
-          await new ChargerRepository().stopCharger(chargerId);
+      await new ChargerRepository().stopCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
       Fluttertoast.showToast(
           msg: response.message,
@@ -668,7 +688,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     try {
       ProgressDialogs.showLoadingDialog(context, _keyLoader); //invoking login
       SuccessResponseData response =
-          await new ChargerRepository().startCharger(chargerId);
+      await new ChargerRepository().startCharger(chargerId);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
       Fluttertoast.showToast(
           msg: response.message,
@@ -704,7 +724,7 @@ class _DynamicListViewScreenState extends State<statusPage> {
     }
   }
 
-  List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
+  List<charts.Series<BarChartModel, String>> getLineChartData() {
     List<BarChartModel> flSpotList = new List<BarChartModel>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
@@ -713,11 +733,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
         i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
-          double yAxis = double.parse( graphResponseData.data.consumptionData.power[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.power[0].data[i].y);
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("soc")) {
       if (graphResponseData.data.consumptionData.soc[0].data.length > 0) {
@@ -726,11 +747,12 @@ class _DynamicListViewScreenState extends State<statusPage> {
         i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
-          double yAxis = double.parse( graphResponseData.data.consumptionData.soc[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.soc[0].data[i].y);
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("consumption")) {
       if (graphResponseData.data.consumptionData.consumption[0].data.length >
@@ -744,18 +766,18 @@ class _DynamicListViewScreenState extends State<statusPage> {
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.round()));
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else {
-      flSpotList.add(BarChartModel(DateTime.now(), 0));
+      flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
     }
 
     return [
-      new charts.Series<BarChartModel, DateTime>(
-        id: 'Sales',
+      charts.Series(
+        id: 'Charger',
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
         domainFn: (BarChartModel sales, _) => sales.dateTime,
         measureFn: (BarChartModel sales, _) => sales.charger,
@@ -764,15 +786,14 @@ class _DynamicListViewScreenState extends State<statusPage> {
     ];
   }
 
-  String getXTitle() {
-    final String formatter = formatDate(selectedDate, [MM]);
+  String getXTitle(DateTime dateTime) {
+    final String formatter = formatDate(dateTime, [HH, ':', nn]);
     return formatter;
   }
-
   fetchStationList() async {
     try {
       StationDataList response =
-          await new ChargerRepository().fetchStationList();
+      await new ChargerRepository().fetchStationList();
       setState(() {
         if (response.success && response.data.groups.length > 0) {
           _stationGroup = response.data.groups;
@@ -802,20 +823,20 @@ class _DynamicListViewScreenState extends State<statusPage> {
 
   String convertTimeFromString(String strDate) {
     DateTime todayDate =
-        new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
+    new DateFormat("dd/MM/yyyy, hh:mm:ss a").parse(strDate);
     return formatDate(todayDate, [HH, ':', nn]);
   }
 
   String convertDateFromString(String strDate) {
     DateTime todayDate =
-        new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
+    new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
     return formatDate(todayDate, [M, ', ', dd]);
   }
 
   fetchStatusLogList(String chargerId) async {
     try {
       StatusLogsData response =
-          await new ChargerRepository().fetchStatusLogsList(chargerId);
+      await new ChargerRepository().fetchStatusLogsList(chargerId);
       setState(() {
         Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
         if (response.success) {
@@ -901,8 +922,8 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                       ProgressDialogs.showLoadingDialog(
                                           context, _keyLoader);
                                       for (var i = 0;
-                                          i < _stationGroup.length;
-                                          i++) {
+                                      i < _stationGroup.length;
+                                      i++) {
                                         if (_stationGroup[i]
                                             .name
                                             .endsWith(newValue)) {
@@ -914,29 +935,29 @@ class _DynamicListViewScreenState extends State<statusPage> {
                                     items: _stationGroup
                                         .map<DropdownMenuItem<String>>(
                                             (Groups value) {
-                                      return DropdownMenuItem<String>(
-                                        value: value.name,
-                                        child: Row(
-                                          children: <Widget>[
-                                            SvgPicture.asset(
-                                                'assets/station_icon.svg',
-                                                color: Color(0xff14AE39),
-                                                width: 20,
-                                                height: 20),
-                                            Padding(
-                                              padding:
+                                          return DropdownMenuItem<String>(
+                                            value: value.name,
+                                            child: Row(
+                                              children: <Widget>[
+                                                SvgPicture.asset(
+                                                    'assets/station_icon.svg',
+                                                    color: Color(0xff14AE39),
+                                                    width: 20,
+                                                    height: 20),
+                                                Padding(
+                                                  padding:
                                                   EdgeInsets.only(left: 8.0),
-                                              child: Text(value.name,
-                                                  style: TextStyle(
-                                                      fontWeight:
+                                                  child: Text(value.name,
+                                                      style: TextStyle(
+                                                          fontWeight:
                                                           FontWeight.w400,
-                                                      color: Colors.black,
-                                                      fontSize: 13)),
-                                            )
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
+                                                          color: Colors.black,
+                                                          fontSize: 13)),
+                                                )
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
                                   )),
                           ],
                         )),
@@ -959,22 +980,22 @@ class _DynamicListViewScreenState extends State<statusPage> {
                       child: Conditional.single(
                           context: context,
                           conditionBuilder: (BuildContext context) =>
-                              statusLogsList.length > 0,
+                          statusLogsList.length > 0,
                           widgetBuilder: (BuildContext context) => Container(
-                                height:
-                                    MediaQuery.of(context).size.height * 0.65,
-                                padding: EdgeInsets.all(15.0),
-                                child: new ListView.builder(
-                                    itemCount: statusLogsList.length,
-                                    itemBuilder:
-                                        (BuildContext ctxt, int index) =>
-                                            buildBody(ctxt, index)),
-                              ),
+                            height:
+                            MediaQuery.of(context).size.height * 0.65,
+                            padding: EdgeInsets.all(15.0),
+                            child: new ListView.builder(
+                                itemCount: statusLogsList.length,
+                                itemBuilder:
+                                    (BuildContext ctxt, int index) =>
+                                    buildBody(ctxt, index)),
+                          ),
                           fallbackBuilder: (BuildContext context) => Container(
-                                padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
-                                alignment: Alignment.center,
-                                child: Text('No Logs found!'),
-                              )),
+                            padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
+                            alignment: Alignment.center,
+                            child: Text('No Logs found!'),
+                          )),
                     ),
                   ])),
         ));

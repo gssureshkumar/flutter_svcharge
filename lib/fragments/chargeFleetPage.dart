@@ -308,29 +308,49 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                   borderRadius: BorderRadius.all(
                                     Radius.circular(18),
                                   ),
-                                  color: Color(0xff232d37)),
+                                  color: Color(0xff232d37)), //c3c5c9
                               child: Padding(
                                 padding: const EdgeInsets.only(
                                     right: 18.0,
                                     left: 12.0,
                                     top: 24,
                                     bottom: 12),
-                                child: charts.TimeSeriesChart(
-                                  getLineChartData (),
-                                  animate: true,
-                                  defaultRenderer:
-                                      new charts.BarRendererConfig<DateTime>(),
-                                  defaultInteractions: false,
-                                  selectionModels: [
-                                    new charts.SelectionModelConfig(
-                                      type: charts.SelectionModelType.info,
-                                    )
-                                  ],
-                                  behaviors: [
-                                    new charts.SelectNearest(),
-                                    new charts.DomainHighlighter()
-                                  ],
-                                ),
+                                child: charts.BarChart(getLineChartData(),
+                                    animate: true,
+                                    primaryMeasureAxis:
+                                        new charts.NumericAxisSpec(
+                                            renderSpec:
+                                                new charts.GridlineRendererSpec(
+                                      labelStyle: new charts.TextStyleSpec(
+                                          fontSize: 14, // size in Pts.
+                                          color: charts.MaterialPalette.white),
+                                      // Change the line colors to match text color.
+                                      lineStyle: new charts.LineStyleSpec(
+                                          color: charts.MaterialPalette.gray.shade800),
+                                    )),
+                                    domainAxis: new charts.OrdinalAxisSpec(
+                                      renderSpec:
+                                          new charts.SmallTickRendererSpec(
+                                        labelStyle: new charts.TextStyleSpec(
+                                            fontSize: 14, // size in Pts.
+                                            color:
+                                                charts.MaterialPalette.white),
+                                        lineStyle: new charts.LineStyleSpec(
+                                            color:
+                                                charts.MaterialPalette.gray.shade800),
+                                      ),
+                                      tickProviderSpec:
+                                          charts.StaticOrdinalTickProviderSpec(<
+                                              charts.TickSpec<String>>[
+                                        charts.TickSpec<String>("10:00"),
+                                        charts.TickSpec<String>("20:00"),
+                                      ]),
+                                    ),
+                                    behaviors: [
+                                      new charts.SeriesLegend(),
+                                      // new charts.SlidingViewport(),
+                                      new charts.PanAndZoomBehavior(),
+                                    ]),
                               ),
                             ),
                           ),
@@ -361,7 +381,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                         fallbackBuilder: (BuildContext context) => Container(
                               padding: EdgeInsets.fromLTRB(0, 50, 0, 20),
                               alignment: Alignment.center,
-                              child: Text('No Chargers found!'),
+                              child: Text('No Logs found!'),
                             )),
                   ],
                 ),
@@ -762,9 +782,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     }
   }
 
-
-
-List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
+  List<charts.Series<BarChartModel, String>> getLineChartData() {
     List<BarChartModel> flSpotList = new List<BarChartModel>();
     if (pickerValue.toLowerCase().endsWith("power")) {
       if (graphResponseData.data.consumptionData.power[0].data.length > 0) {
@@ -773,11 +791,12 @@ List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
             i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.power[0].data[i].x);
-          double yAxis = double.parse( graphResponseData.data.consumptionData.power[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.power[0].data[i].y);
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("soc")) {
       if (graphResponseData.data.consumptionData.soc[0].data.length > 0) {
@@ -786,11 +805,12 @@ List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
             i++) {
           DateTime todayDate = new DateFormat("MM/dd/yyyy, hh:mm:ss a")
               .parse(graphResponseData.data.consumptionData.soc[0].data[i].x);
-          double yAxis = double.parse( graphResponseData.data.consumptionData.soc[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.toInt()));
+          double yAxis = double.parse(
+              graphResponseData.data.consumptionData.soc[0].data[i].y);
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else if (pickerValue.toLowerCase().endsWith("consumption")) {
       if (graphResponseData.data.consumptionData.consumption[0].data.length >
@@ -804,18 +824,18 @@ List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
               graphResponseData.data.consumptionData.consumption[0].data[i].x);
           double yAxis = double.parse(
               graphResponseData.data.consumptionData.consumption[0].data[i].y);
-          flSpotList.add(BarChartModel(todayDate, yAxis.round()));
+          flSpotList.add(BarChartModel(getXTitle(todayDate), yAxis));
         }
       } else {
-        flSpotList.add(BarChartModel(DateTime.now(), 0));
+        flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
       }
     } else {
-      flSpotList.add(BarChartModel(DateTime.now(), 0));
+      flSpotList.add(BarChartModel(getXTitle(DateTime.now()), 0));
     }
 
     return [
-      new charts.Series<BarChartModel, DateTime>(
-        id: 'Sales',
+      charts.Series(
+        id: 'Charger',
         colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
         domainFn: (BarChartModel sales, _) => sales.dateTime,
         measureFn: (BarChartModel sales, _) => sales.charger,
@@ -824,8 +844,8 @@ List<charts.Series<BarChartModel, DateTime>> getLineChartData() {
     ];
   }
 
-  String getXTitle() {
-    final String formatter = formatDate(selectedDate, [MM]);
+  String getXTitle(DateTime dateTime) {
+    final String formatter = formatDate(dateTime, [HH, ':', nn]);
     return formatter;
   }
 

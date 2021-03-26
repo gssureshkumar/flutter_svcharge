@@ -37,7 +37,7 @@ class navigationDrawer extends StatelessWidget {
                       children: <Widget>[
                         Container(
                             padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
-                            child: SvgPicture.asset('assets/logo_nav_icon.svg',
+                            child: SvgPicture.asset('assets/lo    ccccccccvcnnnngo_nav_icon.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
                         Container(
