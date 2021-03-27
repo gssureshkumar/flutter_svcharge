@@ -37,13 +37,13 @@ class navigationDrawer extends StatelessWidget {
                       children: <Widget>[
                         Container(
                             padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
-                            child: SvgPicture.asset('assets/lo    ccccccccvcnnnngo_nav_icon.svg',
+                            child: SvgPicture.asset('assets/logo_nav_icon.svg',
                                 alignment: Alignment.center,
                                 color: Colors.white)),
                         Container(
                           alignment:Alignment.centerRight,
                           padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
-                          child: Text('V: 1.0.5',
+                          child: Text('V: 1.0.6',
                               style: TextStyle(
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white,
