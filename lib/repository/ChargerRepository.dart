@@ -1,6 +1,9 @@
 import 'package:sc_charge/models/ChargerDataList.dart';
 import 'package:sc_charge/models/GraphResponseData.dart';
 import 'package:sc_charge/models/SingleChargerData.dart';
+import 'package:sc_charge/models/SmartChargeData.dart';
+import 'package:sc_charge/models/StartSmartChargerRequest.dart';
+import 'package:sc_charge/models/StartSmartChargerResponse.dart';
 import 'package:sc_charge/models/StationDataList.dart';
 import 'package:sc_charge/models/StatusLogsData.dart';
 import 'package:sc_charge/models/SuccessResponseData.dart';
@@ -22,6 +25,18 @@ class ChargerRepository {
     String queryString = Uri(queryParameters: queryParams).query;
     final response = await _helper.get("device/deviceData?" + queryString);
     return GraphResponseData.fromJson(response);
+  }
+
+  Future<SmartChargeData> fetchSmartChargeData(String licenseId,String deviceid) async {
+    String chargerId = await _getChargerId();
+    final response = await _helper.get("device/smartCharge/" + licenseId+"/"+deviceid);
+    return SmartChargeData.fromJson(response);
+  }
+
+  Future<StartSmartChargerResponse> startSmartChargeData(StartSmartChargerRequest request,String licenseId,String deviceid) async {
+    String chargerId = await _getChargerId();
+    final response = await _helper.post("device/startSmartCharge/" + chargerId+"/"+deviceid,request);
+    return StartSmartChargerResponse.fromJson(response);
   }
 
   Future<ChargerDataList> fetchChargerList(String chargerId) async {

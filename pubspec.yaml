@@ -81,6 +81,12 @@ flutter:
     - assets/not_connected_icon.svg
     - assets/start_charging.svg
     - assets/stop_charging.svg
+    - assets/success_icon.svg
+    - assets/un_success_icon.svg
+    - assets/clock_icon.svg
+    - assets/battery_icon.svg
+    - assets/active_icon.svg
+    - assets/schedule_icon.svg
 
 
 

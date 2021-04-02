@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ProgressDialogs {
+
   static Future<void> showLoadingDialog(
       BuildContext context, GlobalKey key) async {
     return showDialog<void>(

@@ -6,10 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sc_charge/models/ChargerDataList.dart';
 import 'package:sc_charge/models/GraphResponseData.dart';
+import 'package:sc_charge/models/SmartChargeData.dart';
+import 'package:sc_charge/models/StartSmartChargerRequest.dart';
+import 'package:sc_charge/models/StartSmartChargerResponse.dart';
 import 'package:sc_charge/models/StationDataList.dart';
 import 'package:sc_charge/models/SuccessResponseData.dart';
 import 'package:sc_charge/navigationDrawer/navigationDrawer.dart';
 import 'package:sc_charge/repository/ChargerRepository.dart';
+import 'package:sc_charge/widget/CustomSmartChargerAlert.dart';
 import 'package:sc_charge/widget/ProgressDialog.dart';
 import 'package:flutter_conditional_rendering/flutter_conditional_rendering.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -37,6 +41,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   ChargerData chargerData;
   GraphResponseData graphResponseData;
   String pickerValue = 'Power';
+  String dropdownValue;
+  String dropdownEndTime;
+  String dropdownEndTimeValue;
+  String dropdownChargingHours = "1";
+  String dropdownChargingType = "Split";
+  String chargerValue;
+  String licenseId;
+
+  List<Groups> _stationGroup = [];
+  List<String> chargingHoursData = [];
+  SmartChargeData _smartChargeData;
   DateTime selectedDate = DateTime.now();
 
   _selectDate(BuildContext context) async {
@@ -53,58 +68,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
         fetchDeviceLogs(chargerData);
       });
   }
-
-  // BarChartData avgData() {
-  //   xAxisPos = 0;
-  //   List<BarChartGroupData> flSpotList = getLineChartData();
-  //   return BarChartData(
-  //     alignment: BarChartAlignment.center,
-  //     barTouchData: BarTouchData(
-  //       enabled: false,
-  //     ),
-  //     titlesData: FlTitlesData(
-  //       show: true,
-  //       bottomTitles: SideTitles(
-  //         showTitles: true,
-  //         getTextStyles: (value) =>
-  //             const TextStyle(color: Color(0xff939393), fontSize: 10),
-  //         margin: 10,
-  //         getTitles: (value) {
-  //           String dateTime = minutesToDateOfDay(value.round());
-  //           print(dateTime);
-  //           return dateTime;
-  //         },
-  //         interval: xAxisInterval((calculateNumber(
-  //                 ((25 / 100) * (maxXAxisValue - minXAxisValue)).round())))
-  //             .toDouble(),
-  //       ),
-  //       leftTitles: SideTitles(
-  //         showTitles: true,
-  //         getTextStyles: (value) => const TextStyle(
-  //             color: Color(
-  //               0xff939393,
-  //             ),
-  //             fontSize: 10),
-  //         margin: 0,
-  //       ),
-  //     ),
-  //     minY: 0,
-  //     maxY: maxChargerValue,
-  //     gridData: FlGridData(
-  //       show: true,
-  //       checkToShowHorizontalLine: (value) => value % 10 == 0,
-  //       getDrawingHorizontalLine: (value) => FlLine(
-  //         color: const Color(0xffe7e8ec),
-  //         strokeWidth: 1,
-  //       ),
-  //     ),
-  //     borderData: FlBorderData(
-  //       show: false,
-  //     ),
-  //     groupsSpace: 1,
-  //     barGroups: flSpotList,
-  //   );
-  // }
 
   String minutesToTimeOfDay(int minutes) {
     Duration duration = Duration(minutes: minutes);
@@ -326,7 +289,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                           color: charts.MaterialPalette.white),
                                       // Change the line colors to match text color.
                                       lineStyle: new charts.LineStyleSpec(
-                                          color: charts.MaterialPalette.gray.shade800),
+                                          color: charts
+                                              .MaterialPalette.gray.shade800),
                                     )),
                                     domainAxis: new charts.OrdinalAxisSpec(
                                       renderSpec:
@@ -336,8 +300,8 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                             color:
                                                 charts.MaterialPalette.white),
                                         lineStyle: new charts.LineStyleSpec(
-                                            color:
-                                                charts.MaterialPalette.gray.shade800),
+                                            color: charts
+                                                .MaterialPalette.gray.shade800),
                                       ),
                                       tickProviderSpec:
                                           charts.StaticOrdinalTickProviderSpec(<
@@ -384,6 +348,326 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                               child: Text('No Logs found!'),
                             )),
                   ],
+                ),
+              ],
+            ));
+      },
+    );
+  }
+
+  void _showSmartChargeModel(SmartChargeData smartChargeData, String deviceid) {
+    showModalBottomSheet<void>(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+            height: MediaQuery.of(context).size.height * 0.7,
+            width: MediaQuery.of(context).size.width,
+            child: ListView(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Container(
+                              width: MediaQuery.of(context) .size.width * 0.75,
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.fromLTRB(50,10,10,10),
+                              child: Text('Smart Charge Schedule',
+                                  style: GoogleFonts.poppins(
+                                    textStyle: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black,
+                                        fontSize: 16),
+                                  ))),
+                          Container(
+                              alignment: Alignment.centerRight,
+                              child: IconButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                icon: Icon(Icons.close),
+                              )),
+                        ],
+                      ),
+                      Container(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text('Start Time',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xff818E94),
+                                    fontSize: 12),
+                              ))),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xffE0E0E0),
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child:
+                                    SvgPicture.asset('assets/clock_icon.svg')),
+                            Container(
+                                alignment: Alignment.center,
+                                padding: EdgeInsets.all(10),
+                                child:
+                                    Text(smartChargeData.data.startTime.label,
+                                        style: GoogleFonts.poppins(
+                                          textStyle: TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              color: Color(0xff000000),
+                                              fontSize: 13),
+                                        ))),
+                          ],
+                        ),
+                      ),
+                      Container(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text('End Time',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xff818E94),
+                                    fontSize: 12),
+                              ))),
+                      Container(
+                        padding: EdgeInsets.fromLTRB(10, 0, 0, 0),
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xffE0E0E0),
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                                padding: EdgeInsets.fromLTRB(10, 0, 10, 0),
+                                child:
+                                    SvgPicture.asset('assets/clock_icon.svg')),
+                            Container(
+                                alignment: Alignment.centerLeft,
+                                child: DropdownButton<String>(
+                                  value: dropdownEndTime,
+                                  icon: Icon(Icons.arrow_drop_down),
+                                  iconSize: 24,
+                                  elevation: 16,
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w400,
+                                      color: Color(0xff000000),
+                                      fontSize: 13),
+                                  underline: Container(
+                                    height: 0,
+                                    color: Colors.deepPurpleAccent,
+                                  ),
+                                  onChanged: (String newValue) {
+                                    print(newValue);
+                                    setState(() {
+                                      dropdownEndTime = newValue;
+                                    });
+                                    var diff =
+                                        convertTimeFromHour(dropdownEndTime)
+                                            .difference(convertTimeFromHour(
+                                                smartChargeData
+                                                    .data.startTime.label));
+                                    int inHours = diff.inHours;
+                                    print('diff : $inHours');
+                                    updateChargingHours(inHours);
+                                    Navigator.pop(context);
+                                    _showSmartChargeModel(
+                                        smartChargeData, deviceid);
+                                  },
+                                  items: smartChargeData.data.timeStampArray
+                                      .map<DropdownMenuItem<String>>(
+                                          (TimeStampArray value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value.label,
+                                      child: new SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.6,
+                                          child: Container(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Text(value.label,
+                                                style: TextStyle(
+                                                    fontWeight: FontWeight.w400,
+                                                    color: Colors.black,
+                                                    fontSize: 13)),
+                                          )),
+                                    );
+                                  }).toList(),
+                                )),
+                          ],
+                        ),
+                      ),
+                      Container(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text('Charging Hours',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xff818E94),
+                                    fontSize: 12),
+                              ))),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xffE0E0E0),
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: <Widget>[
+                            Container(
+                                padding: EdgeInsets.fromLTRB(30, 0, 10, 0),
+                                child: SvgPicture.asset(
+                                    'assets/battery_icon.svg')),
+                            DropdownButton<String>(
+                              value: dropdownChargingHours,
+                              icon: Icon(Icons.arrow_drop_down),
+                              iconSize: 24,
+                              elevation: 16,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff000000),
+                                  fontSize: 13),
+                              underline: Container(
+                                height: 0,
+                                color: Colors.deepPurpleAccent,
+                              ),
+                              onChanged: (String newValue) {
+                                print(newValue);
+                                setState(() {
+                                  dropdownChargingHours = newValue;
+                                });
+                                Navigator.pop(context);
+                                _showSmartChargeModel(
+                                    smartChargeData, deviceid);
+                              },
+                              items: chargingHoursData
+                                  .map<DropdownMenuItem<String>>(
+                                      (String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: new SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.6,
+                                      child: Container(
+                                        padding: EdgeInsets.only(left: 10.0),
+                                        child: Text(value,
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w400,
+                                                color: Colors.black,
+                                                fontSize: 13)),
+                                      )),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                          alignment: Alignment.centerLeft,
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+                          child: Text('Charge Type',
+                              style: GoogleFonts.poppins(
+                                textStyle: TextStyle(
+                                    fontWeight: FontWeight.normal,
+                                    color: Color(0xff818E94),
+                                    fontSize: 12),
+                              ))),
+                      Container(
+                        width: MediaQuery.of(context).size.width,
+                        decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Color(0xffE0E0E0),
+                            ),
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(10))),
+                        child: DropdownButton<String>(
+                          value: dropdownChargingType,
+                          icon: Icon(Icons.arrow_drop_down),
+                          iconSize: 24,
+                          elevation: 16,
+                          style: TextStyle(
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xff000000),
+                              fontSize: 13),
+                          underline: Container(
+                            height: 0,
+                            color: Colors.deepPurpleAccent,
+                          ),
+                          onChanged: (String newValue) {
+                            print(newValue);
+                            setState(() {
+                              dropdownChargingType = newValue;
+                            });
+                            Navigator.pop(context);
+                            _showSmartChargeModel(smartChargeData, deviceid);
+                          },
+                          items: <String>[
+                            'Split',
+                            'Consecutive',
+                          ].map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: new SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.75,
+                                  child: Container(
+                                    padding: EdgeInsets.only(left: 30.0),
+                                    child: Text(value,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w400,
+                                            color: Colors.black,
+                                            fontSize: 13)),
+                                  )),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        width: MediaQuery.of(context).size.width,
+                        padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
+                        child: MaterialButton(
+                            minWidth: MediaQuery.of(context).size.width,
+                            shape: new RoundedRectangleBorder(
+                              borderRadius: new BorderRadius.circular(15.0),
+                            ),
+                            color: Color(0xff0F123F),
+                            child: Text("Schedule",
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white,
+                                    fontSize: 13)),
+                            onPressed: () => {
+                                  Navigator.pop(context),
+                                  startSmartCharger(deviceid)
+                                }),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ));
@@ -489,6 +773,12 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     return formatDate(todayDate, [HH, ':', nn]);
   }
 
+  DateTime convertTimeFromHour(String strDate) {
+    DateTime todayDate =
+        new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
+    return todayDate;
+  }
+
   String convertDateFromString(String strDate) {
     DateTime todayDate =
         new DateFormat("MM/dd/yyyy, hh:mm:ss a").parse(strDate);
@@ -511,7 +801,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                 ),
                 builder: (BuildContext context) {
                   return Container(
-                    height: 200,
+                    height: 250,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -584,6 +874,26 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                             ],
                           ),
                           Container(
+                            alignment: Alignment.center,
+                            width: MediaQuery.of(context).size.width,
+                            padding: EdgeInsets.fromLTRB(40, 15, 40, 0),
+                            child: MaterialButton(
+                                minWidth: MediaQuery.of(context).size.width,
+                                shape: new RoundedRectangleBorder(
+                                  borderRadius: new BorderRadius.circular(10.0),
+                                ),
+                                color: Color(0xff0F123F),
+                                child: Text("Smart Charge",
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                        fontSize: 13)),
+                                onPressed: () => {
+                                      fetchSmartCharger(
+                                          chargerDataList[index].sId)
+                                    }),
+                          ),
+                          Container(
                               alignment: Alignment.center,
                               padding: EdgeInsets.all(10),
                               child: FlatButton(
@@ -600,7 +910,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                             fontWeight: FontWeight.w500,
                                             color: Color(0xff0F123F),
                                             fontSize: 13),
-                                      ))))
+                                      )))),
                         ],
                       ),
                     ),
@@ -644,6 +954,18 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                           'assets/tick_icon.svg',
                                           height: 80,
                                           width: 80)),
+                                  'scheduled': (BuildContext context) => Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/schedule_icon.svg',
+                                          height: 80,
+                                          width: 80)),
+                                  'active': (BuildContext context) => Container(
+                                      alignment: Alignment.center,
+                                      child: SvgPicture.asset(
+                                          'assets/active_icon.svg',
+                                          height: 80,
+                                          width: 80)),
                                 },
                                 fallbackBuilder: (BuildContext context) =>
                                     Container(
@@ -677,11 +999,6 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     fetchStationList();
   }
 
-  String dropdownValue;
-  String chargerValue;
-
-  List<Groups> _stationGroup = [];
-
   fetchStationList() async {
     try {
       StationDataList response =
@@ -693,6 +1010,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
             _stationGroup = response.data.groups;
             dropdownValue = response.data.groups[0].name;
             chargerValue = response.data.groups[0].sId;
+            licenseId= response.data.groups[0].licenseId;
             fetchChargerList(response.data.groups[0].sId);
           }
         });
@@ -779,6 +1097,65 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
     } catch (e) {
       print(e);
       Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    }
+  }
+
+  fetchSmartCharger(String deviceid) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader);
+      _smartChargeData =
+          await new ChargerRepository().fetchSmartChargeData(licenseId,deviceid);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      if (_smartChargeData != null && _smartChargeData.success) {
+        if (_smartChargeData.data.timeStampArray.isNotEmpty) {
+          dropdownEndTime = _smartChargeData.data.timeStampArray[0].label;
+          dropdownEndTimeValue = _smartChargeData.data.timeStampArray[0].value;
+          var diff = convertTimeFromHour(dropdownEndTime).difference(
+              convertTimeFromHour(_smartChargeData.data.startTime.label));
+          int inHours = diff.inHours;
+          print('diff : $inHours');
+          updateChargingHours(inHours);
+          _showSmartChargeModel(_smartChargeData, deviceid);
+        }
+      }else{
+        showErrorMessage(_smartChargeData.message);
+      }
+    } catch (e) {
+      print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    }
+  }
+
+  startSmartCharger(String deviceid) async {
+    try {
+      ProgressDialogs.showLoadingDialog(context, _keyLoader);
+      String endTime;
+      for (var i = 0; i < _smartChargeData.data.timeStampArray.length; i++) {
+        if (_smartChargeData.data.timeStampArray[i].label == dropdownEndTime) {
+          endTime = _smartChargeData.data.timeStampArray[i].value;
+        }
+      }
+      StartSmartChargerRequest request = new StartSmartChargerRequest(
+          startTime: _smartChargeData.data.startTime.value,
+          endTime: endTime,
+          chargingHours: dropdownChargingHours,
+          type: dropdownChargingType.toLowerCase());
+      StartSmartChargerResponse response =
+          await new ChargerRepository().startSmartChargeData(request, licenseId,deviceid);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+      if (response != null) {
+        CustomSmartChargerAlert.showSuccessDialog(context, response.success);
+      }
+    } catch (e) {
+      print(e);
+      Navigator.of(_keyLoader.currentContext, rootNavigator: true).pop();
+    }
+  }
+
+  void updateChargingHours(int maxHours) {
+    chargingHoursData = [];
+    for (var i = 0; i < maxHours; i++) {
+      chargingHoursData.add((i + 1).toString());
     }
   }
 
@@ -937,10 +1314,9 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                       for (var i = 0;
                                           i < _stationGroup.length;
                                           i++) {
-                                        if (_stationGroup[i]
-                                            .name
-                                            .endsWith(newValue)) {
+                                        if (_stationGroup[i].name == newValue) {
                                           chargerValue = _stationGroup[i].sId;
+                                          licenseId= _stationGroup[i].licenseId;
                                           fetchChargerList(
                                               _stationGroup[i].sId);
                                         }
@@ -1008,5 +1384,17 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
   void dispose() {
     timer?.cancel();
     super.dispose();
+  }
+
+
+  showErrorMessage(String message) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0);
   }
 }
