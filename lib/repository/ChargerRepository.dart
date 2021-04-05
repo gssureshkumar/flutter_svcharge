@@ -35,7 +35,7 @@ class ChargerRepository {
 
   Future<StartSmartChargerResponse> startSmartChargeData(StartSmartChargerRequest request,String licenseId,String deviceid) async {
     String chargerId = await _getChargerId();
-    final response = await _helper.post("device/startSmartCharge/" + chargerId+"/"+deviceid,request);
+    final response = await _helper.postWithToken("device/startSmartCharge/" + chargerId+"/"+deviceid,request);
     return StartSmartChargerResponse.fromJson(response);
   }
 

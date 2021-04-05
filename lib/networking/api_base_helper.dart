@@ -10,8 +10,8 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiBaseHelper {
-  final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
-  // final String _baseUrl = "https://tgserver.scnordic.com/api/app/";
+  // final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
+  final String _baseUrl = "https://tgserver.scnordic.com/api/app/";
 
 
   Future<dynamic> get(String url) async {
@@ -63,6 +63,30 @@ class ApiBaseHelper {
           body: json.encode(body),
           headers: {
             "Content-Type": "application/json"
+          }).timeout(const Duration(seconds: 120), onTimeout: () {
+        showErrorMessage('The connection has timed out, Please try again!');
+        throw FetchDataException('The connection has timed out, Please try again!');
+      });
+      responseJson = _returnResponse(response);
+    } on SocketException {
+      showErrorMessage('No Internet connection');
+      throw FetchDataException('No Internet connection');
+    }
+    print('api post.');
+    return responseJson;
+  }
+
+  Future<dynamic> postWithToken(String url, dynamic body) async {
+    print('Api Post, url $url');
+    print('Api Post, url ' + json.encode(body));
+    var responseJson;
+    try {
+      String token = await _getToken();
+      final response = await http.post(_baseUrl + url,
+          body: json.encode(body),
+          headers: {
+            "Content-Type": "application/json",
+            HttpHeaders.authorizationHeader: token
           }).timeout(const Duration(seconds: 120), onTimeout: () {
         showErrorMessage('The connection has timed out, Please try again!');
         throw FetchDataException('The connection has timed out, Please try again!');

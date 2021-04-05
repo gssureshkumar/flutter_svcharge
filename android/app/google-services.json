@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "682428988649",
+    "project_id": "smartcharge-ee08a",
+    "storage_bucket": "smartcharge-ee08a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:682428988649:android:7a9b0571f444c9e12b0478",
+        "android_client_info": {
+          "package_name": "com.mobile.sc.charge"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "682428988649-4cgbtg5kuknc7tbjnq4kj13tgohjkcr1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUdsMB6155LKDJX_2JXA4FjLnX4hfioMc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "682428988649-4cgbtg5kuknc7tbjnq4kj13tgohjkcr1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

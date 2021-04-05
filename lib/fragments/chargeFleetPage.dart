@@ -890,7 +890,7 @@ class _DynamicListViewScreenState extends State<chargeFleetPage> {
                                         fontSize: 13)),
                                 onPressed: () => {
                                       fetchSmartCharger(
-                                          chargerDataList[index].sId)
+                                          chargerDataList[index].serialNumber)
                                     }),
                           ),
                           Container(

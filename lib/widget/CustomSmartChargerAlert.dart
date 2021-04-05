@@ -19,7 +19,7 @@ class CustomSmartChargerAlert {
               child: SimpleDialog(
                   backgroundColor: Colors.white,
                   children: <Widget>[
-                    Expanded(
+                    Container(
                       child: Conditional.single(
                         context: context,
                         conditionBuilder: (BuildContext context) => isSuccess,
