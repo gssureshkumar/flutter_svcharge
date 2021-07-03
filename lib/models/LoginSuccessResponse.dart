@@ -118,14 +118,15 @@ class License {
   Ventilation loadShifting;
   Ventilation outOfHours;
   Ventilation heatPump;
-
+  Ventilation CFM;
   License(
       {this.ventilation,
         this.cooling,
         this.evCharging,
         this.loadShifting,
         this.outOfHours,
-        this.heatPump});
+        this.heatPump,
+        this.CFM});
 
   License.fromJson(Map<String, dynamic> json) {
     ventilation = json['ventilation'] != null
@@ -145,6 +146,9 @@ class License {
         : null;
     heatPump = json['heatPump'] != null
         ? new Ventilation.fromJson(json['heatPump'])
+        : null;
+    CFM = json['CFM'] != null
+        ? new Ventilation.fromJson(json['CFM'])
         : null;
   }
 
@@ -167,6 +171,9 @@ class License {
     }
     if (this.heatPump != null) {
       data['heatPump'] = this.heatPump.toJson();
+    }
+    if (this.CFM != null) {
+      data['CFM'] = this.CFM.toJson();
     }
     return data;
   }

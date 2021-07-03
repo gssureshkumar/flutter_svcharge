@@ -74,7 +74,7 @@ class ChargerRepository {
 
   Future<SuccessResponseData> userLogout() async {
     final response =
-    await _helper.postWithOutBody("user/logout/");
+    await _helper.postUserWithOutBody("/user/logout/");
     return SuccessResponseData.fromJson(response);
   }
 }

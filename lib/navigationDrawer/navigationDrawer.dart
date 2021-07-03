@@ -19,11 +19,28 @@ import 'package:sc_charge/routes/pageRoute.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class navigationDrawer extends StatelessWidget {
+class navigationDrawer extends StatefulWidget {
+
+@override
+_navigationDrawerScreenState createState() => _navigationDrawerScreenState();
+}
+
+
+
+class _navigationDrawerScreenState extends State<navigationDrawer> {
   bool isNavSelected;
   final GlobalKey<State> _keyLoader = new GlobalKey<State>();
+  String chargeType;
+
+  @override
+  void initState() {
+    super.initState();
+    _getChargerType();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _getChargerType();
     return Drawer(
         elevation: 1.5,
         child: new Column(children: <Widget>[
@@ -41,7 +58,7 @@ class navigationDrawer extends StatelessWidget {
                                 alignment: Alignment.center,
                                 color: Colors.white)),
                         Container(
-                          alignment:Alignment.centerRight,
+                          alignment: Alignment.centerRight,
                           padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
                           child: Text('V: 1.0.7',
                               style: TextStyle(
@@ -51,55 +68,59 @@ class navigationDrawer extends StatelessWidget {
                         ),
                         createDrawerBodyCornerItem(
                             icon: 'assets/charger_fleet.png',
-                            text: 'Charge Fleet Management'),
+                            text:chargeType),
                         createDrawerChargerItem(
                             icon: 'assets/charger.png',
                             text: 'Chargers',
-                            onTap: () => {
-                                  print(MyConstants.navPosition),
-                                  MyConstants.navPosition = 1,
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) =>
-                                              new chargeFleetPage()))
-                                }),
+                            onTap: () =>
+                            {
+                              print(MyConstants.navPosition),
+                              MyConstants.navPosition = 1,
+                              Navigator.push(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) =>
+                                      new chargeFleetPage()))
+                            }),
                         createDrawerStatusItem(
                             icon: 'assets/status.png',
                             text: 'Status',
-                            onTap: () => {
-                                  print(MyConstants.navPosition),
-                                  MyConstants.navPosition = 2,
-                                  Navigator.pushReplacement(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) =>
-                                              new statusPage()))
-                                }),
+                            onTap: () =>
+                            {
+                              print(MyConstants.navPosition),
+                              MyConstants.navPosition = 2,
+                              Navigator.pushReplacement(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) =>
+                                      new statusPage()))
+                            }),
                         createDrawerBusesItem(
                             icon: 'assets/buses.png',
                             text: 'Buses',
-                            onTap: () => {
-                                  print(MyConstants.navPosition),
-                                  MyConstants.navPosition = 3,
-                                  Navigator.pushReplacement(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) =>
-                                              new busesPage()))
-                                }),
+                            onTap: () =>
+                            {
+                              print(MyConstants.navPosition),
+                              MyConstants.navPosition = 3,
+                              Navigator.pushReplacement(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) =>
+                                      new busesPage()))
+                            }),
                         createDrawerOptimizedItem(
                             icon: 'assets/optimized.png',
                             text: 'Optimized',
-                            onTap: () => {
-                                  print(MyConstants.navPosition),
-                                  MyConstants.navPosition = 4,
-                                  Navigator.pushReplacement(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) =>
-                                              new optimizedPage()))
-                                }),
+                            onTap: () =>
+                            {
+                              print(MyConstants.navPosition),
+                              MyConstants.navPosition = 4,
+                              Navigator.pushReplacement(
+                                  context,
+                                  new MaterialPageRoute(
+                                      builder: (context) =>
+                                      new optimizedPage()))
+                            }),
                       ],
                     ),
                   ))),
@@ -112,7 +133,8 @@ class navigationDrawer extends StatelessWidget {
                 // This container holds all the children that will be aligned
                 // on the bottom and should not scroll with the above ListView
                 child: new GestureDetector(
-                  onTap: () => {
+                  onTap: () =>
+                  {
                     ProgressDialogs.showLoadingDialog(context, _keyLoader),
                     userLogout(context),
                   },
@@ -144,6 +166,18 @@ class navigationDrawer extends StatelessWidget {
   void _clearInStatus() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.clear();
+  }
+
+  void _getChargerType() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    int chargerType = pref.getInt('charger_type');
+    setState(() {
+      if (chargerType == 1) {
+        chargeType = "EV Charging";
+      } else {
+        chargeType = "Charge Fleet Management";
+      }
+    });
   }
 
   userLogout(BuildContext context) async {

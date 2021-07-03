@@ -191,6 +191,12 @@ class _LoginScreenState extends State<LoginScreen> {
     pref.setString('user_id', userId);
   }
 
+  // Sets the login status
+  void _storeChargerType(int type) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setInt('charger_type', type);
+  }
+
   void _storeLoggedInToken(String token) async {
     SharedPreferences pref = await SharedPreferences.getInstance();
     pref.setString('token', 'Bearer ' + token);
@@ -202,26 +208,112 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void loginSuccess(LoginSuccessResponse loginSuccessResponse) {
-    if (loginSuccessResponse.success &&
-        loginSuccessResponse.data.user.customerId.license.evCharging.enabled) {
-      _storeLoggedInStatus(true);
-      _storeLoggedInId(loginSuccessResponse.data.user.sId);
-      _storeLoggedInToken(loginSuccessResponse.data.token);
-      _storeLoggedInChargerId(
-          loginSuccessResponse.data.user.customerId.license.evCharging.id);
-      Navigator.of(context)
-          .pushReplacement(MaterialPageRoute(builder: (context) {
-        return chargeFleetPage();
-      }));
+    if (loginSuccessResponse.success) {
+      if (loginSuccessResponse
+              .data.user.customerId.license.evCharging.enabled &&
+          loginSuccessResponse.data.user.customerId.license.CFM.enabled) {
+        _showMyDialog(loginSuccessResponse);
+      } else if (loginSuccessResponse
+              .data.user.customerId.license.evCharging.enabled ||
+          loginSuccessResponse.data.user.customerId.license.CFM.enabled) {
+        if (loginSuccessResponse
+            .data.user.customerId.license.evCharging.enabled) {
+          _storeChargerType(1);
+        } else {
+          _storeChargerType(2);
+        }
+        navigateToHome(loginSuccessResponse);
+      } else {
+        showError(loginSuccessResponse);
+      }
     } else {
-      Fluttertoast.showToast(
-          msg: loginSuccessResponse.message,
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.black54,
-          textColor: Colors.white,
-          fontSize: 14.0);
+      showError(loginSuccessResponse);
     }
+  }
+
+  String _selectedText = "EV Charging";
+
+  Future<void> _showMyDialog(LoginSuccessResponse loginSuccessResponse) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Select E3 App:",
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  fontSize: 15)),
+          content: new DropdownButton<String>(
+            isExpanded: true,
+            value: _selectedText,
+            icon: Icon(Icons.arrow_drop_down),
+            iconSize: 24,
+            elevation: 16,
+            style: TextStyle(
+                fontWeight: FontWeight.w400,
+                color: Color(0xff000000),
+                fontSize: 13),
+            items: <String>['EV Charging', 'CFM'].map((String value) {
+              return new DropdownMenuItem<String>(
+                value: value,
+                child: new Text(value,
+                    style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black54,
+                        fontSize: 13)),
+              );
+            }).toList(),
+            onChanged: (String val) {
+              setState(() {
+                _selectedText = val;
+                print(_selectedText);
+              });
+              Navigator.pop(context);
+              _showMyDialog(loginSuccessResponse);
+            },
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text("Okay",
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xff0F123F),
+                      fontSize: 14)),
+              onPressed: () {
+                if (_selectedText.endsWith("EV Charging")) {
+                  _storeChargerType(1);
+                } else {
+                  _storeChargerType(2);
+                }
+                navigateToHome(loginSuccessResponse);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void navigateToHome(LoginSuccessResponse loginSuccessResponse) {
+    _storeLoggedInStatus(true);
+    _storeLoggedInId(loginSuccessResponse.data.user.sId);
+    _storeLoggedInToken(loginSuccessResponse.data.token);
+    _storeLoggedInChargerId(
+        loginSuccessResponse.data.user.customerId.license.evCharging.id);
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
+      return chargeFleetPage();
+    }));
+  }
+
+  void showError(LoginSuccessResponse loginSuccessResponse) {
+    Fluttertoast.showToast(
+        msg: loginSuccessResponse.message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 14.0);
   }
 }

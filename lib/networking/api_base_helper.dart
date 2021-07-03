@@ -10,12 +10,13 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiBaseHelper {
-  // final String _baseUrl = "https://betaserver.scnordic.com/api/app/";
-  final String _baseUrl = "https://tgserver.scnordic.com/api/app/";
+   // String _baseUrl = "https://betaserver.scnordic.com/api/app";
+   String _baseUrl = "https://tgserver.scnordic.com/api/app";
 
 
   Future<dynamic> get(String url) async {
-    print('Api Get, url $url');
+    _baseUrl = _baseUrl + await _getChargerType();
+    print('Api Get, url $_baseUrl + $url');
     var responseJson;
     try {
       String token = await _getToken();
@@ -36,7 +37,8 @@ class ApiBaseHelper {
   }
 
   Future<dynamic> getBackgroundCall(String url) async {
-    print('Api Get, url $url');
+    _baseUrl = _baseUrl + await _getChargerType();
+    print('Api Get, url $_baseUrl + $url');
     var responseJson;
     try {
       String token = await _getToken();
@@ -55,7 +57,7 @@ class ApiBaseHelper {
   }
 
   Future<dynamic> post(String url, dynamic body) async {
-    print('Api Post, url $url');
+    print('Api Post, url $_baseUrl + $url');
     print('Api Post, url ' + json.encode(body));
     var responseJson;
     try {
@@ -77,7 +79,8 @@ class ApiBaseHelper {
   }
 
   Future<dynamic> postWithToken(String url, dynamic body) async {
-    print('Api Post, url $url');
+    _baseUrl = _baseUrl + await _getChargerType();
+    print('Api Post, url $_baseUrl + $url');
     print('Api Post, url ' + json.encode(body));
     var responseJson;
     try {
@@ -101,9 +104,10 @@ class ApiBaseHelper {
   }
 
   Future<dynamic> postWithOutBody(String url) async {
+    _baseUrl = _baseUrl + await _getChargerType();
     var responseJson;
     try {
-      print('postWithOutBody , url $url');
+      print('postWithOutBody , url $_baseUrl +$url');
       String token = await _getToken();
       final response = await http.post(_baseUrl + url, headers: {
         HttpHeaders.authorizationHeader: token
@@ -120,10 +124,31 @@ class ApiBaseHelper {
     return responseJson;
   }
 
+   Future<dynamic> postUserWithOutBody(String url) async {
+     var responseJson;
+     try {
+       print('postWithOutBody , url $url');
+       String token = await _getToken();
+       final response = await http.post(_baseUrl + url, headers: {
+         HttpHeaders.authorizationHeader: token
+       }).timeout(const Duration(seconds: 120), onTimeout: () {
+         showErrorMessage('The connection has timed out, Please try again!');
+         throw FetchDataException('The connection has timed out, Please try again!');
+       });
+       responseJson = _returnResponse(response);
+     } on SocketException {
+       showErrorMessage('No Internet connection');
+       throw FetchDataException('No Internet connection');
+     }
+     print('api post.');
+     return responseJson;
+   }
+
   Future<dynamic> put(String url, dynamic body) async {
     print('Api Put, url $url');
     var responseJson;
     try {
+      _baseUrl = _baseUrl + await _getChargerType();
       final response = await http
           .put(_baseUrl + url, body: body)
           .timeout(const Duration(seconds: 120), onTimeout: () {
@@ -144,6 +169,7 @@ class ApiBaseHelper {
     print('Api delete, url $url');
     var apiResponse;
     try {
+      _baseUrl = _baseUrl + await _getChargerType();
       final response = await http
           .delete(_baseUrl + url)
           .timeout(const Duration(seconds: 120), onTimeout: () {
@@ -161,30 +187,11 @@ class ApiBaseHelper {
 }
 
 dynamic _returnResponse(http.Response response) {
-  // switch (response.statusCode) {
-  //   case 200:
   var responseJson = json.decode(response.body.toString());
   print(responseJson);
   return responseJson;
-  // case 400:
-  //   throw BadRequestException(response.body.toString());
-  // case 401:
-  // case 403:
-  //   throw UnauthorisedException(response.body.toString());
-  // case 500:
-  // default:
-  //   throw FetchDataException(
-  //       'Error occured while Communication with Server with StatusCode : ${response
-  //           .statusCode}');
-  // }
 }
 
-dynamic _returnErrorResponse(String response) {
-  var responseJson = json.decode(response);
-  print("errpr" + responseJson);
-  return new Map<String, dynamic>.from(responseJson);
-
-}
 
 showErrorMessage(String message) {
   Fluttertoast.showToast(
@@ -200,4 +207,15 @@ showErrorMessage(String message) {
 Future<String> _getToken() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   return pref.getString('token');
+}
+
+
+Future<String> _getChargerType() async {
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  int chargerType=  pref.getInt('charger_type');
+
+  if(chargerType  ==1){
+    return "/evCharging/";
+  }
+  return "/cfm/";
 }

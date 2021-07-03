@@ -6,7 +6,7 @@ class LoginRepository {
   ApiBaseHelper _helper = ApiBaseHelper();
 
   Future<LoginSuccessResponse> callDoLogin(LoginInputData inputDatal) async {
-    final response = await _helper.post("user/login", inputDatal);
+    final response = await _helper.post("/user/login", inputDatal);
     return LoginSuccessResponse.fromJson(response);
   }
 }
