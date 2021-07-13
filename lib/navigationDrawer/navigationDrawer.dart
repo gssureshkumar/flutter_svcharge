@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:sc_charge/fragments/busesPage.dart';
+import 'package:flutter_conditional_rendering/conditional.dart';
+import 'package:sc_charge/fragments/vehiclesPage.dart';
 import 'package:sc_charge/fragments/chargeFleetPage.dart';
 import 'package:sc_charge/fragments/optimizedPage.dart';
 import 'package:sc_charge/fragments/statusPage.dart';
@@ -20,12 +21,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class navigationDrawer extends StatefulWidget {
-
-@override
-_navigationDrawerScreenState createState() => _navigationDrawerScreenState();
+  @override
+  _navigationDrawerScreenState createState() => _navigationDrawerScreenState();
 }
-
-
 
 class _navigationDrawerScreenState extends State<navigationDrawer> {
   bool isNavSelected;
@@ -35,6 +33,7 @@ class _navigationDrawerScreenState extends State<navigationDrawer> {
   @override
   void initState() {
     super.initState();
+    chargeType ="";
     _getChargerType();
   }
 
@@ -49,81 +48,135 @@ class _navigationDrawerScreenState extends State<navigationDrawer> {
               child: Container(
                   color: Color(0xff0F123F),
                   child: Container(
-                    child: ListView(
-                      padding: EdgeInsets.zero,
-                      children: <Widget>[
-                        Container(
-                            padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
-                            child: SvgPicture.asset('assets/logo_nav_icon.svg',
-                                alignment: Alignment.center,
-                                color: Colors.white)),
-                        Container(
-                          alignment: Alignment.centerRight,
-                          padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
-                          child: Text('V: 1.0.7',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white,
-                                  fontSize: 10)),
-                        ),
-                        createDrawerBodyCornerItem(
-                            icon: 'assets/charger_fleet.png',
-                            text:chargeType),
-                        createDrawerChargerItem(
-                            icon: 'assets/charger.png',
-                            text: 'Chargers',
-                            onTap: () =>
-                            {
-                              print(MyConstants.navPosition),
-                              MyConstants.navPosition = 1,
-                              Navigator.push(
-                                  context,
-                                  new MaterialPageRoute(
-                                      builder: (context) =>
-                                      new chargeFleetPage()))
-                            }),
-                        createDrawerStatusItem(
-                            icon: 'assets/status.png',
-                            text: 'Status',
-                            onTap: () =>
-                            {
-                              print(MyConstants.navPosition),
-                              MyConstants.navPosition = 2,
-                              Navigator.pushReplacement(
-                                  context,
-                                  new MaterialPageRoute(
-                                      builder: (context) =>
-                                      new statusPage()))
-                            }),
-                        createDrawerBusesItem(
-                            icon: 'assets/buses.png',
-                            text: 'Buses',
-                            onTap: () =>
-                            {
-                              print(MyConstants.navPosition),
-                              MyConstants.navPosition = 3,
-                              Navigator.pushReplacement(
-                                  context,
-                                  new MaterialPageRoute(
-                                      builder: (context) =>
-                                      new busesPage()))
-                            }),
-                        createDrawerOptimizedItem(
-                            icon: 'assets/optimized.png',
-                            text: 'Optimized',
-                            onTap: () =>
-                            {
-                              print(MyConstants.navPosition),
-                              MyConstants.navPosition = 4,
-                              Navigator.pushReplacement(
-                                  context,
-                                  new MaterialPageRoute(
-                                      builder: (context) =>
-                                      new optimizedPage()))
-                            }),
-                      ],
+                      child: Conditional.single(
+                    context: context,
+                    conditionBuilder: (BuildContext context) =>
+                        chargeType.endsWith("Charge Fleet Management"),
+                    widgetBuilder: (BuildContext context) => Container(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: <Widget>[
+                          Container(
+                              padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
+                              child: SvgPicture.asset(
+                                  'assets/logo_nav_icon.svg',
+                                  alignment: Alignment.center,
+                                  color: Colors.white)),
+                          Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
+                            child: Text('V: 1.0.7',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    fontSize: 10)),
+                          ),
+                          createDrawerBodyCornerItem(
+                              icon: 'assets/charger_fleet.png',
+                              text: chargeType),
+                          createDrawerChargerItem(
+                              icon: 'assets/charger.png',
+                              text: 'Chargers',
+                              onTap: () => {
+                                    print(MyConstants.navPosition),
+                                    MyConstants.navPosition = 1,
+                                    Navigator.push(
+                                        context,
+                                        new MaterialPageRoute(
+                                            builder: (context) =>
+                                                new chargeFleetPage()))
+                                  }),
+                          createDrawerStatusItem(
+                              icon: 'assets/status.png',
+                              text: 'Status',
+                              onTap: () => {
+                                    print(MyConstants.navPosition),
+                                    MyConstants.navPosition = 2,
+                                    Navigator.pushReplacement(
+                                        context,
+                                        new MaterialPageRoute(
+                                            builder: (context) =>
+                                                new statusPage()))
+                                  }),
+                          createDrawerOptimizedItem(
+                              icon: 'assets/buses.png',
+                              text: 'Vehicles',
+                              onTap: () => {
+
+                                    MyConstants.navPosition = 3,
+                                    Navigator.pushReplacement(
+                                        context,
+                                        new MaterialPageRoute(
+                                            builder: (context) =>
+                                                new vehiclesPage()))
+                                  }),
+
+                          // createDrawerOptimizedItem(
+                          //     icon: 'assets/optimized.png',
+                          //     text: 'Optimized',
+                          //     onTap: () =>
+                          //     {
+                          //       print(MyConstants.navPosition),
+                          //       MyConstants.navPosition = 4,
+                          //       Navigator.pushReplacement(
+                          //           context,
+                          //           new MaterialPageRoute(
+                          //               builder: (context) =>
+                          //               new optimizedPage()))
+                          //     }),
+                        ],
+                      ),
                     ),
-                  ))),
+                    fallbackBuilder: (BuildContext context) => Container(
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        children: <Widget>[
+                          Container(
+                              padding: EdgeInsets.fromLTRB(20, 60, 20, 20),
+                              child: SvgPicture.asset(
+                                  'assets/logo_nav_icon.svg',
+                                  alignment: Alignment.center,
+                                  color: Colors.white)),
+                          Container(
+                            alignment: Alignment.centerRight,
+                            padding: EdgeInsets.fromLTRB(10, 0, 10, 20),
+                            child: Text('V: 1.0.7',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white,
+                                    fontSize: 10)),
+                          ),
+                          createDrawerBodyCornerItem(
+                              icon: 'assets/charger_fleet.png',
+                              text: chargeType),
+                          createDrawerChargerItem(
+                              icon: 'assets/charger.png',
+                              text: 'Chargers',
+                              onTap: () => {
+                                    print(MyConstants.navPosition),
+                                    MyConstants.navPosition = 1,
+                                    Navigator.push(
+                                        context,
+                                        new MaterialPageRoute(
+                                            builder: (context) =>
+                                                new chargeFleetPage()))
+                                  }),
+                          createDrawerStatusItem(
+                              icon: 'assets/status.png',
+                              text: 'Status',
+                              onTap: () => {
+                                    print(MyConstants.navPosition),
+                                    MyConstants.navPosition = 2,
+                                    Navigator.pushReplacement(
+                                        context,
+                                        new MaterialPageRoute(
+                                            builder: (context) =>
+                                                new statusPage()))
+                                  }),
+                        ],
+                      ),
+                    ),
+                  )))),
           Container(
               padding: EdgeInsets.all(30.0),
               color: Color(0xff0F123F),
@@ -133,8 +186,7 @@ class _navigationDrawerScreenState extends State<navigationDrawer> {
                 // This container holds all the children that will be aligned
                 // on the bottom and should not scroll with the above ListView
                 child: new GestureDetector(
-                  onTap: () =>
-                  {
+                  onTap: () => {
                     ProgressDialogs.showLoadingDialog(context, _keyLoader),
                     userLogout(context),
                   },

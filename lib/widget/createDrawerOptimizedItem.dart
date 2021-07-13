@@ -12,7 +12,7 @@ Widget createDrawerOptimizedItem(
       alignment: Alignment(0, -5),
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-          color: MyConstants.navPosition != 4
+          color: MyConstants.navPosition != 3
               ? Color(0xff47496B)
               : Colors.transparent,
           borderRadius: BorderRadius.only(

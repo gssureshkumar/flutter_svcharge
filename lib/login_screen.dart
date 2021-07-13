@@ -207,6 +207,11 @@ class _LoginScreenState extends State<LoginScreen> {
     pref.setString('charger_id', chargerId);
   }
 
+  void _storeLoggedInCFMId(String chargerId) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setString('cfm_id', chargerId);
+  }
+
   void loginSuccess(LoginSuccessResponse loginSuccessResponse) {
     if (loginSuccessResponse.success) {
       if (loginSuccessResponse
@@ -301,6 +306,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _storeLoggedInToken(loginSuccessResponse.data.token);
     _storeLoggedInChargerId(
         loginSuccessResponse.data.user.customerId.license.evCharging.id);
+    _storeLoggedInCFMId(
+        loginSuccessResponse.data.user.customerId.license.CFM.id);
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
       return chargeFleetPage();
     }));

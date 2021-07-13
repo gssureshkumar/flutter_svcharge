@@ -89,6 +89,7 @@ flutter:
     - assets/battery_icon.svg
     - assets/active_icon.svg
     - assets/schedule_icon.svg
+    - assets/no_data_found.svg
 
 
 

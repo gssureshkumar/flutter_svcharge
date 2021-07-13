@@ -7,6 +7,8 @@ import 'package:sc_charge/models/StartSmartChargerResponse.dart';
 import 'package:sc_charge/models/StationDataList.dart';
 import 'package:sc_charge/models/StatusLogsData.dart';
 import 'package:sc_charge/models/SuccessResponseData.dart';
+import 'package:sc_charge/models/VehicleDetailsResponse.dart';
+import 'package:sc_charge/models/VehiclesListData.dart';
 import 'package:sc_charge/networking/api_base_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -77,9 +79,30 @@ class ChargerRepository {
     await _helper.postUserWithOutBody("/user/logout/");
     return SuccessResponseData.fromJson(response);
   }
+
+  Future<VehiclesListData> fetchVehicleList() async {
+    String chargerId = await _getCFMId();
+    final response = await _helper.get("device/vehicle/drop-down/" + chargerId);
+    return VehiclesListData.fromJson(response);
+  }
+
+  Future<VehicleDetailsResponse> fetchVehicleDetailsList(String startDate, String endDate, String tagID) async {
+    String chargerId = await _getCFMId();
+    Map<String, String> queryParams = {'idTag': tagID, 'startDate': startDate,'endDate': endDate};
+    String queryString = Uri(queryParameters: queryParams).query;
+    final response = await _helper.get("device/vehicle/"+ chargerId+"?" + queryString);
+    return VehicleDetailsResponse.fromJson(response);
+  }
 }
 
 Future<String> _getChargerId() async {
   SharedPreferences pref = await SharedPreferences.getInstance();
   return pref.getString('charger_id');
 }
+
+Future<String> _getCFMId() async {
+  SharedPreferences pref = await SharedPreferences.getInstance();
+  return pref.getString('cfm_id');
+}
+
+
